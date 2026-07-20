@@ -1,0 +1,29 @@
+---
+title: Wiki Log
+---
+
+# Wiki Log
+
+- [2026-07-20T10:36:00Z] INIT vault_path="c:/Users/Jhonric Gorillo/Desktop/JHONRIC_FILES/OJT/LNN-Prediction-Model-Project/obsidian-vault" categories=concepts,entities,skills,references,synthesis,journal
+- [2026-07-20T10:40:00Z] INGEST source="LNN/SYSTEM ARCHITECTURE.htm" pages_updated=0 pages_created=5
+- [2026-07-20T10:50:00Z] PLAN Created plans/phase1-preparation.md for Phase 1 Research & Tool Selection.
+- [2026-07-20T11:21:00Z] REFERENCE Created references/heat-index-dataset-variables.md defining required Open-Meteo variables for Heat Index calculation.
+- [2026-07-20T11:31:00Z] INGEST Parsed open-meteo-dataset-for-heatindex-3months.csv (60,340 valid rows across 7 stations), exported clean CSVs to data/, and created references/open-meteo-3month-dataset.md.
+- [2026-07-20T11:40:00Z] PHASE1 COMPLETE Created LNN/STGNN concept notes, LFM vs Baseline comparison study, repository skeleton (pyproject.toml, requirements.txt, Dockerfile, src/, tests/), and verified unit tests via python -m unittest (3/3 PASS).
+- [2026-07-20T11:41:00Z] PLAN Created plans/phase2-preparation.md for Phase 2 API Design & Authentication.
+- [2026-07-20T11:50:00Z] PHASE2 COMPLETE Implemented Kloudtech Telemetry & Heat Index FastAPI microservice (src/api/), x-kloudtrack-key security middleware, Pydantic schemas, references/kloudtech-api-specification.md, and verified 11/11 tests passing.
+- [2026-07-20T11:52:00Z] PROXY INTEGRATION Added Base URL (https://api.kloudtechsea.com/api/v1) and KloudtechProxyClient backend caching layer (src/api/client.py & src/api/config.py) to protect private API keys and manage rate limits (12/12 tests PASS).
+- [2026-07-20T12:08:00Z] PLAN Created plans/phase3-preparation.md for Phase 3 Data Ingestion Prototype.
+- [2026-07-20T12:13:00Z] PHASE3 COMPLETE Implemented telemetry quality validator (src/data/validator.py), local/S3 partitioned storage adapters (src/data/storage_adapter.py), ingestion client (src/data/ingestion_client.py), references/data-ingestion-architecture.md, and verified 18/18 unit tests passing.
+- [2026-07-20T12:15:00Z] PHASE4 COMPLETE Implemented Denoising Liquid Neural Network Service (src/models/lfm_denoiser.py), benchmarked 1,000 runs (Mean: 17.4 ms, P99: 29.9 ms < 50 ms SLA target PASSED), created concepts/lfm-denoiser-service.md, and verified 20/20 unit tests passing.
+- [2026-07-20T12:20:00Z] PHASE5 COMPLETE Expanded deterministic Heat-Index module (src/data/heat_index.py) with Lu & Romps apparent temperature, Stull wet-bulb, vectorized array batching, created concepts/heat-index-calculator-module.md, and verified 24/24 unit tests passing.
+- [2026-07-20T12:23:00Z] ANTIDOOM INTEGRATION Installed .agents/skills/antidoom/SKILL.md, updated .agents/AGENTS.md with 4-part workflow (Improve, Ponytail, Antidoom, Obsidian Wiki), and created entities/antidoom.md in knowledge vault.
+- [2026-07-20T12:25:00Z] PHASE6 COMPLETE Built spatial distance adjacency matrix builder (src/models/spatial_graph.py), Spatial-Temporal GNN model (src/models/stgnn_forecaster.py), created concepts/stgnn-forecast-engine.md, and verified 28/28 unit tests passing.
+- [2026-07-20T12:28:00Z] PHASE7 COMPLETE Built real-time Heat-Index command center dashboard applying frontend-design skill (static/index.html, static/style.css, static/app.js), mounted static route in src/api/main.py, created concepts/dashboard-visualization.md, and verified 29/29 unit tests passing.
+- [2026-07-20T12:33:00Z] PHASE8 COMPLETE Finalized Dockerfile, docker-compose.yml, GitHub Actions CI/CD workflow (.github/workflows/ci.yml), deployment verification script (scripts/deploy.py), references/deployment-pipeline-automation.md, and verified 34/34 unit tests passing. ALL 8 PHASES COMPLETE.
+- [2026-07-20T12:57:00Z] DASHBOARD REFINEMENT Removed calculator card & status badges (net: -131 lines), added 3-second realtime telemetry streaming, shaded forecast prediction confidence range bands, and interactive action buttons (34/34 tests PASS).
+- [2026-07-20T13:00:00Z] COLOR PALETTE UPDATE Updated static/style.css, static/app.js, and .agents/AGENTS.md to enforce the mandatory project color palette: Yellow-Orange (#FFD60A, #FF9F0A), Black (#000000), and White (#FFFFFF).
+- [2026-07-20T13:08:00Z] REAL OPEN-METEO INTEGRATION Integrated real Open-Meteo 15-min dataset (data/timeseries_15min_clean.csv) & PyTorch STGNN station forecast route (/telemetry/station/{stationId}/forecast). Synchronized top banner cards and forecast curves per selected station (34/34 tests PASS).
+- [2026-07-20T13:15:00Z] CHART MOUSE WHEEL ZOOM Added chartjs-plugin-zoom to static/index.html & static/app.js. Enabled mouse scroll wheel zooming/panning across minute/hour/day forecast steps in sync with 3s live telemetry updates, plus added a Reset Graph Zoom button (34/34 tests PASS).
+- [2026-07-20T13:16:00Z] 1:1 MAP RATIO & 1-PAGE LAYOUT Adjusted static/style.css to give the Leaflet weather station map a 1:1 aspect ratio while locking the entire dashboard layout to fit cleanly within 1 single viewport page without vertical scrollbars (34/34 tests PASS).
+- [2026-07-20T13:17:00Z] GRAPH DRAG PANNING Updated static/app.js & static/style.css to enable direct mouse drag panning across the timeline (`modifierKey: null`), added grab/grabbing cursors on the canvas, and retained real-time stream sync (34/34 tests PASS).

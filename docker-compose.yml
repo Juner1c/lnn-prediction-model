@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  lnn-prediction-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lnn-heat-index-service
+    ports:
+      - "8000:8000"
+    environment:
+      - KLOUDTRACK_API_KEY=kloudtrack_secret_key_123
+      - KLOUDTECH_BASE_URL=https://api.kloudtechsea.com/api/v1
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

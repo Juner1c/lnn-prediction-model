@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LNN Heat-Index Realtime Command Center</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-pulse"></div>
+                <h1>KLOUDTECH<span> / LNN HEAT-INDEX</span></h1>
+            </div>
+            <div class="header-actions">
+                <button class="btn-action" id="btn-reset-zoom">Reset Graph Zoom</button>
+                <button class="btn-action" id="btn-refresh-now">Refresh Realtime Data</button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Stations & Live Map -->
+            <section class="panel panel-map">
+                <div class="panel-header">
+                    <h2>Central Luzon Weather Station Network</h2>
+                </div>
+                <div id="map" class="map-container"></div>
+                
+                <div class="station-cards-grid" id="station-list">
+                    <!-- Dynamic Station Cards populated by app.js -->
+                </div>
+            </section>
+
+            <!-- Right Panel: Realtime Telemetry & Dynamic Forecasts -->
+            <section class="panel panel-analytics">
+                <!-- Top Metrics Banner (Synced Per Selected Station) -->
+                <div class="metrics-banner">
+                    <div class="metric-card highlight-metric">
+                        <span class="metric-label" id="label-selected-hi">Station Heat Index</span>
+                        <div class="metric-val-group">
+                            <span class="metric-value" id="max-hi-value">--°C</span>
+                            <span class="risk-pill risk-normal" id="max-hi-risk">Normal</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <span class="metric-label">Air Temperature</span>
+                        <span class="metric-value" id="avg-temp-value">--°C</span>
+                    </div>
+
+                    <div class="metric-card">
+                        <span class="metric-label">Relative Humidity</span>
+                        <span class="metric-value" id="avg-humidity-value">--%</span>
+                    </div>
+
+                    <div class="metric-card">
+                        <span class="metric-label">LNN Denoising Latency</span>
+                        <span class="metric-value text-cyan" id="latency-value">-- ms</span>
+                    </div>
+                </div>
+
+                <!-- Forecast Chart -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3>Realtime Forecast Timeline: <span id="active-station-title" style="color: var(--accent-orange);">Coastal Station 0</span></h3>
+                        </div>
+                        <div class="chart-controls">
+                            <button class="btn-tab active" id="btn-chart-hi">Heat Index</button>
+                            <button class="btn-tab" id="btn-chart-temp">Temperature</button>
+                            <button class="btn-tab" id="btn-chart-rh">Humidity</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Chart.js & Zoom Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <!-- Custom App JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

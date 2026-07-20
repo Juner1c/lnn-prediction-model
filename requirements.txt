@@ -1,0 +1,23 @@
+# Core Deep Learning & Liquid Neural Networks
+torch>=2.0.0
+torch_geometric>=2.3.0
+ncps>=0.0.5
+
+# Scientific Computing & Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+scikit-learn>=1.2.0
+
+# API Gateway & Web Framework
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+
+# Configuration & Utilities
+pyyaml>=6.0
+requests>=2.31.0
+
+# Testing & Linting
+pytest>=7.3.0
+pytest-cov>=4.1.0

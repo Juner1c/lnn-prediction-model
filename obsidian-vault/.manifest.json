@@ -1,0 +1,19 @@
+{
+  "stats": {
+    "total_sources_ingested": 1,
+    "total_pages": 5
+  },
+  "c:/Users/Jhonric Gorillo/Desktop/JHONRIC_FILES/OJT/LNN-Prediction-Model-Project/LNN/SYSTEM ARCHITECTURE.htm": {
+    "content_hash": "sha256:36e3bae4ea7463258be80c26369c179841d06fec5168b5be115dea68f9d43d55",
+    "last_ingested": "2026-07-20T10:40:00Z",
+    "pages_produced": [
+      "projects/lnn-prediction-model/lnn-prediction-model.md",
+      "projects/lnn-prediction-model/concepts/system-architecture.md",
+      "projects/lnn-prediction-model/concepts/telemetry-logging.md",
+      "projects/lnn-prediction-model/concepts/dashboard-features.md",
+      "projects/lnn-prediction-model/references/project-timeline.md"
+    ],
+    "source_type": "document",
+    "project": "lnn-prediction-model"
+  }
+}
