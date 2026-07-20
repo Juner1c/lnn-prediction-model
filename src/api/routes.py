@@ -178,14 +178,14 @@ def get_station_forecast(
     base_temp = latest.temperature if latest else 31.0
     base_rh = latest.humidity if latest else 65.0
 
-    # Generate 16-day hourly forecast sequence (384 steps = 16 days * 24 hours)
+    # Generate 1-Month (30 Days = 720 hours) hourly forecast sequence
     hi_mean, hi_upper, hi_lower = [], [], []
     temp_mean, temp_upper, temp_lower = [], [], []
     rh_mean, rh_upper, rh_lower = [], [], []
 
     latest_time = pd.to_datetime(latest.recordedAt) if (latest and latest.recordedAt) else pd.Timestamp.now(tz="Asia/Manila")
 
-    for h in range(1, 385):
+    for h in range(1, 721):
         t_future = latest_time + pd.Timedelta(hours=h)
         hour_local = t_future.hour
         # Diurnal solar cycle: peak at 14:00 PM (+1.0), trough at 04:00 AM (-1.0)
@@ -196,31 +196,36 @@ def get_station_forecast(
 
         # Heat Index
         hi_val = round(base_hi + (diurnal_factor * 3.5) + st_drift, 1)
-        hi_spread = 1.0 + (h / 384.0) * 2.5
+        hi_spread = 1.0 + (h / 720.0) * 3.5
         hi_mean.append(hi_val)
         hi_upper.append(round(hi_val + hi_spread, 1))
         hi_lower.append(round(hi_val - hi_spread, 1))
 
         # Temperature
         temp_val = round(base_temp + (diurnal_factor * 2.8) + (st_drift * 0.7), 1)
-        temp_spread = 0.8 + (h / 384.0) * 1.8
+        temp_spread = 0.8 + (h / 720.0) * 2.5
         temp_mean.append(temp_val)
         temp_upper.append(round(temp_val + temp_spread, 1))
         temp_lower.append(round(temp_val - temp_spread, 1))
 
         # Humidity (inverse diurnal cycle)
         rh_val = round(min(100.0, max(0.0, base_rh - (diurnal_factor * 8.0) - (st_drift * 1.2))), 1)
-        rh_spread = 2.0 + (h / 384.0) * 4.0
+        rh_spread = 2.0 + (h / 720.0) * 5.0
         rh_mean.append(rh_val)
         rh_upper.append(round(min(100.0, rh_val + rh_spread), 1))
         rh_lower.append(round(max(0.0, rh_val - rh_spread), 1))
 
     return KloudtrackResponse(
-        message=f"Realtime 16-Day Hourly STGNN forecast generated for {station.name}",
+        message=f"Realtime 30-Day (1-Month) Hourly STGNN forecast generated for {station.name}",
         data={
             "station": station,
             "current": latest,
             "history_24h": history,
+            "forecast_30day": {
+                "heatIndex": { "mean": hi_mean, "upper": hi_upper, "lower": hi_lower },
+                "temperature": { "mean": temp_mean, "upper": temp_upper, "lower": temp_lower },
+                "humidity": { "mean": rh_mean, "upper": rh_upper, "lower": rh_lower }
+            },
             "forecast_16day": {
                 "heatIndex": { "mean": hi_mean, "upper": hi_upper, "lower": hi_lower },
                 "temperature": { "mean": temp_mean, "upper": temp_upper, "lower": temp_lower },

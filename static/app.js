@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         pointRadius: 2
                     },
                     {
-                        label: '16-Day Mean Forecast (°C)',
+                        label: '30-Day Mean Forecast (°C)',
                         data: [],
                         borderColor: '#FF9F0A',
                         backgroundColor: 'transparent',
@@ -371,9 +371,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         });
+
+        // Set cursor grab styling for free pan dragging
+        const chartCanvas = document.getElementById("telemetryChart");
+        if (chartCanvas) {
+            chartCanvas.style.cursor = "grab";
+            chartCanvas.addEventListener("mousedown", () => { chartCanvas.style.cursor = "grabbing"; });
+            chartCanvas.addEventListener("mouseup", () => { chartCanvas.style.cursor = "grab"; });
+        }
     }
 
-    // Dynamic Chart Updates with Full 96-step 24h History + 384-step 16-Day Hourly Forecast
+    // Dynamic Chart Updates with Full 96-step 24h History + 720-step 30-Day Hourly Forecast
     function updateChartData() {
         if (!chart || !stationData.length) return;
 
@@ -418,26 +426,28 @@ document.addEventListener("DOMContentLoaded", () => {
             historyPoints.push({ x: d, y: rawHistory[i] });
         }
 
-        // Extract 384 forecast hourly mean, upper, lower bounds for 16 Days
+        // Extract 720 forecast hourly mean, upper, lower bounds for 30 Days (1 Month)
         let rawMean = [];
         let rawUpper = [];
         let rawLower = [];
 
-        const metricFc = (fc && fc.forecast_16day && fc.forecast_16day[currentMetric])
-            ? fc.forecast_16day[currentMetric]
-            : ((fc && fc.forecast_16step && fc.forecast_16step[currentMetric]) ? fc.forecast_16step[currentMetric] : null);
+        const metricFc = (fc && fc.forecast_30day && fc.forecast_30day[currentMetric])
+            ? fc.forecast_30day[currentMetric]
+            : ((fc && fc.forecast_16day && fc.forecast_16day[currentMetric])
+                ? fc.forecast_16day[currentMetric]
+                : ((fc && fc.forecast_16step && fc.forecast_16step[currentMetric]) ? fc.forecast_16step[currentMetric] : null));
 
         if (metricFc && metricFc.mean && metricFc.mean.length) {
             rawMean = metricFc.mean.map(v => parseFloat(v.toFixed(1)));
             rawUpper = metricFc.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
             rawLower = metricFc.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
         } else {
-            // Generate synthetic 384 hourly forecast points spanning 16 Days if API response is pending/cached
-            for (let h = 1; h <= 384; h++) {
+            // Generate synthetic 720 hourly forecast points spanning 30 Days (1 Month) if API response is pending/cached
+            for (let h = 1; h <= 720; h++) {
                 const hourLocal = (lastDate.getHours() + h) % 24;
                 const diurnal = Math.sin(((hourLocal - 8) / 24.0) * 2 * Math.PI);
                 const meanVal = baseVal + (diurnal * (currentMetric === 'humidity' ? -6.0 : 3.0)) + (Math.random() - 0.5) * 0.3;
-                const spread = 1.0 + (h / 384.0) * 2.5;
+                const spread = 1.0 + (h / 720.0) * 3.5;
                 rawMean.push(parseFloat(meanVal.toFixed(1)));
                 rawUpper.push(parseFloat((meanVal + spread).toFixed(1)));
                 rawLower.push(parseFloat((meanVal - spread).toFixed(1)));
