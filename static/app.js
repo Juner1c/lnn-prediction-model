@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const numHist = rawHistory.length; // 96
         const rawTimestamps = (fc && fc.history_24h && fc.history_24h.timestamps) ? fc.history_24h.timestamps : [];
 
-        // Build 24h history points ({ x: Date, y: Value })
+        // Build 24h history points ({ x: epochMs, y: Value })
         const historyPoints = [];
         let lastDate = now;
 
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 d = new Date(now.getTime() - (numHist - 1 - i) * (15 * 60 * 1000));
             }
             if (i === numHist - 1) lastDate = d;
-            historyPoints.push({ x: d, y: rawHistory[i] });
+            historyPoints.push({ x: d.getTime(), y: rawHistory[i] });
         }
 
         // Extract 720 forecast hourly mean, upper, lower bounds for 30 Days (1 Month)
@@ -454,9 +454,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        const forecastMeanPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
-        const forecastUpperPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
-        const forecastLowerPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastMeanPoints = [{ x: lastDate.getTime(), y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastUpperPoints = [{ x: lastDate.getTime(), y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastLowerPoints = [{ x: lastDate.getTime(), y: parseFloat(baseVal.toFixed(1)) }];
 
         const hourMs = 60 * 60 * 1000;
         rawMean.forEach((m, idx) => {
@@ -465,9 +465,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const upperVal = parseFloat((rawUpper[idx] || meanVal + 1.5).toFixed(1));
             const lowerVal = parseFloat((rawLower[idx] || meanVal - 1.5).toFixed(1));
 
-            forecastMeanPoints.push({ x: t, y: meanVal });
-            forecastUpperPoints.push({ x: t, y: upperVal });
-            forecastLowerPoints.push({ x: t, y: lowerVal });
+            forecastMeanPoints.push({ x: t.getTime(), y: meanVal });
+            forecastUpperPoints.push({ x: t.getTime(), y: upperVal });
+            forecastLowerPoints.push({ x: t.getTime(), y: lowerVal });
         });
 
         chart.data.datasets[0].label = `24h History ${currentMetric.toUpperCase()} (°C)`;
@@ -477,9 +477,13 @@ document.addEventListener("DOMContentLoaded", () => {
         chart.data.datasets[2].data = forecastUpperPoints;
         chart.data.datasets[3].data = forecastLowerPoints;
 
-        if (savedMin !== undefined && savedMax !== undefined) {
+        // Apply scale boundaries ONLY if they are valid epoch timestamps in milliseconds (> year 2000)
+        if (typeof savedMin === 'number' && savedMin > 1000000000000 && typeof savedMax === 'number' && savedMax > 1000000000000) {
             chart.options.scales.x.min = savedMin;
             chart.options.scales.x.max = savedMax;
+        } else {
+            delete chart.options.scales.x.min;
+            delete chart.options.scales.x.max;
         }
 
         chart.update('none');
