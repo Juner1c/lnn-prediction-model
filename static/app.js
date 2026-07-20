@@ -398,17 +398,27 @@ document.addEventListener("DOMContentLoaded", () => {
         rawHistory[rawHistory.length - 1] = parseFloat(baseVal.toFixed(1));
 
         const numHist = rawHistory.length; // 96
+        const rawTimestamps = (fc && fc.history_24h && fc.history_24h.timestamps) ? fc.history_24h.timestamps : [];
 
-        // Build continuous timeline labels (96 history timestamps ending at now, plus 16 future forecast timestamps)
+        // Build continuous timeline labels from actual PHT timestamps
         const timeLabels = [];
+        let lastDate = now;
+
         for (let i = 0; i < numHist; i++) {
-            const t = new Date(now.getTime() - (numHist - 1 - i) * stepMs);
-            timeLabels.push(formatTime(t));
+            if (rawTimestamps[i]) {
+                const d = new Date(rawTimestamps[i]);
+                timeLabels.push(formatTime(d));
+                if (i === numHist - 1) lastDate = d;
+            } else {
+                const t = new Date(now.getTime() - (numHist - 1 - i) * stepMs);
+                timeLabels.push(formatTime(t));
+                if (i === numHist - 1) lastDate = t;
+            }
         }
 
-        // Add 16 forecast step labels into the future
+        // Add 16 forecast step labels into the future starting from last recorded timestamp
         for (let step = 1; step <= 16; step++) {
-            const t = new Date(now.getTime() + step * stepMs);
+            const t = new Date(lastDate.getTime() + step * stepMs);
             timeLabels.push(`+${step * 15}m (${formatTime(t)})`);
         }
 

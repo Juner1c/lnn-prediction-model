@@ -72,20 +72,27 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
                     ws = float(latest["wind_speed_10m (km/h)"])
                     hi = calculate_heat_index(t, rh)
 
+                    # Convert UTC timestamps in CSV to Asia/Manila (UTC+8) for correct local diurnal alignment
+                    st_df = st_df.copy()
+                    st_df["datetime_pht"] = pd.to_datetime(st_df["time"], utc=True).dt.tz_convert("Asia/Manila")
+                    timestamps_pht = st_df["datetime_pht"].dt.strftime("%Y-%m-%dT%H:%M:%S%z").tolist()
+
                     # Extract 24h history sequence (96 steps)
                     t_hist = st_df["temperature_2m (°C)"].values.tolist()
                     rh_hist = st_df["relative_humidity_2m (%)"].values.tolist()
                     hi_hist = [calculate_heat_index(temp, rh_val) for temp, rh_val in zip(t_hist, rh_hist)]
 
                     record_id = 98765 if idx == 0 else 98770 + idx
+                    latest_ts = timestamps_pht[-1]
 
                     station_readings[station.id] = {
                         "latest": WeatherStationApiReading(
-                            id=record_id, recordedAt=str(latest["time"]), createdAt=str(latest["time"]),
+                            id=record_id, recordedAt=latest_ts, createdAt=latest_ts,
                             temperature=t, humidity=rh, dewPoint=dp, apparentTemperature=at, heatIndex=hi,
                             windSpeed=ws, windDirection=180.0, pressure=1012.0
                         ),
                         "history_24h": {
+                            "timestamps": timestamps_pht,
                             "temperature": t_hist,
                             "humidity": rh_hist,
                             "heatIndex": hi_hist
@@ -101,16 +108,18 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
             base_rh = 65.0 + (idx * 1.2)
             hi = calculate_heat_index(base_t, base_rh)
             record_id = 98765 if idx == 0 else 98770 + idx
+            fallback_ts = [ (pd.Timestamp.now(tz="Asia/Manila") - pd.Timedelta(minutes=15*(95-i))).strftime("%Y-%m-%dT%H:%M:%S%z") for i in range(96) ]
             station_readings[station.id] = {
                 "latest": WeatherStationApiReading(
-                    id=record_id, recordedAt="2026-07-20T03:15:00Z", createdAt="2026-07-20T03:15:05Z",
+                    id=record_id, recordedAt=fallback_ts[-1], createdAt=fallback_ts[-1],
                     temperature=base_t, humidity=base_rh, dewPoint=24.0, apparentTemperature=hi, heatIndex=hi,
                     windSpeed=5.0, windDirection=180.0, pressure=1012.0
                 ),
                 "history_24h": {
-                    "temperature": [base_t - 2.0 + (i/24.0)*2.0 for i in range(24)],
-                    "humidity": [base_rh - 3.0 + (i/24.0)*3.0 for i in range(24)],
-                    "heatIndex": [hi - 2.5 + (i/24.0)*2.5 for i in range(24)]
+                    "timestamps": fallback_ts,
+                    "temperature": [base_t - 2.0 + (i/96.0)*2.0 for i in range(96)],
+                    "humidity": [base_rh - 3.0 + (i/96.0)*3.0 for i in range(96)],
+                    "heatIndex": [hi - 2.5 + (i/96.0)*2.5 for i in range(96)]
                 }
             }
 
