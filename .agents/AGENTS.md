@@ -22,6 +22,9 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Synoptic Weather Oscillations**: Multi-day weather forecasts (e.g. 16-to-30-day horizons) MUST incorporate multi-scale synoptic atmospheric pressure waves (3.5-day and 7-day weather oscillations) alongside 24h diurnal solar cycles to avoid static cookie-cutter repeating sine waves.
 - **Clean Ribbon Forecast Rendering**: Long-range time series forecast datasets MUST set `pointRadius: 0` (showing points only on `pointHoverRadius: 5`) with smooth spline interpolation (`tension: 0.35`) to prevent dense sawtooth point clutter.
 
+### Continuous Forecast Boundary Continuity & Transition Smoothing Rule
+- **Zero Boundary Discontinuity ($C^0$ Continuity)**: Time-series forecasts extending from real-time telemetry MUST apply exponential boundary transition smoothing ($W_{\text{smooth}}(h) = 1 - e^{-h/6.0}$) to all additive forecast offsets, guaranteeing seamless zero-discontinuity continuity at $h=0$ without artificial spikes or jumps between history and forecast timelines.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
