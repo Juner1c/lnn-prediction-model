@@ -10,6 +10,10 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Individual Metric Scaling**: When serving or rendering multi-variable forecasts (e.g., Heat Index, Air Temperature, Relative Humidity), API endpoints and frontend charts MUST compute and display variable-specific forecast arrays relative to each metric's distinct baseline units and physical bounds.
 - **No Cross-Metric Contamination**: Never map a forecast tensor computed for one variable (e.g., Heat Index in °C) directly onto another physical variable (e.g., Relative Humidity in % or Air Temperature in °C).
 
+### Chart.js Time Scale & API Response Resilience Rule
+- **Client-Side Fallback Guarantee**: Frontend Chart.js time scales must always provide fallback dataset point generation if live telemetry or forecast endpoints return errors or pending responses, ensuring UI charts never render empty timelines.
+- **Python NumPy Constant Standard**: Always use `np.pi` (lowercase) for mathematical constant definitions in API endpoints.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
