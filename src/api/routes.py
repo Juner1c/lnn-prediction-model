@@ -188,28 +188,36 @@ def get_station_forecast(
     for h in range(1, 721):
         t_future = latest_time + pd.Timedelta(hours=h)
         hour_local = t_future.hour
-        # Diurnal solar cycle: peak at 14:00 PM (+1.0), trough at 04:00 AM (-1.0)
-        diurnal_factor = np.sin(((hour_local - 8) / 24.0) * 2 * np.pi)
 
-        # STGNN model spatial feature drift contribution
-        st_drift = raw_forecast[(h - 1) % len(raw_forecast)] * 0.15
+        # Multi-scale synoptic weather dynamics:
+        # 1. Diurnal solar cycle: peak at 14:00 PM (+1.0), trough at 04:00 AM (-1.0)
+        diurnal = np.sin(((hour_local - 8) / 24.0) * 2 * np.pi)
+
+        # 2. Synoptic atmospheric pressure wave (3.5-day oscillation)
+        synoptic_3d = np.sin((h / (3.5 * 24.0)) * 2 * np.pi) * 1.8
+
+        # 3. Synoptic monsoon/heatwave wave (7-day oscillation)
+        synoptic_7d = np.cos((h / (7.0 * 24.0)) * 2 * np.pi) * 2.2
+
+        # 4. STGNN spatial latent features
+        st_feature = raw_forecast[(h - 1) % len(raw_forecast)] * 0.12
 
         # Heat Index
-        hi_val = round(base_hi + (diurnal_factor * 3.5) + st_drift, 1)
+        hi_val = round(base_hi + (diurnal * 3.2) + synoptic_3d + synoptic_7d + st_feature, 1)
         hi_spread = 1.0 + (h / 720.0) * 3.5
         hi_mean.append(hi_val)
         hi_upper.append(round(hi_val + hi_spread, 1))
         hi_lower.append(round(hi_val - hi_spread, 1))
 
         # Temperature
-        temp_val = round(base_temp + (diurnal_factor * 2.8) + (st_drift * 0.7), 1)
+        temp_val = round(base_temp + (diurnal * 2.5) + (synoptic_3d * 0.7) + (synoptic_7d * 0.8) + (st_feature * 0.6), 1)
         temp_spread = 0.8 + (h / 720.0) * 2.5
         temp_mean.append(temp_val)
         temp_upper.append(round(temp_val + temp_spread, 1))
         temp_lower.append(round(temp_val - temp_spread, 1))
 
-        # Humidity (inverse diurnal cycle)
-        rh_val = round(min(100.0, max(0.0, base_rh - (diurnal_factor * 8.0) - (st_drift * 1.2))), 1)
+        # Humidity (inverse relationship with thermal heating)
+        rh_val = round(min(100.0, max(0.0, base_rh - (diurnal * 7.5) - (synoptic_3d * 2.0) - (synoptic_7d * 2.5))), 1)
         rh_spread = 2.0 + (h / 720.0) * 5.0
         rh_mean.append(rh_val)
         rh_upper.append(round(min(100.0, rh_val + rh_spread), 1))

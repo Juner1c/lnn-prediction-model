@@ -302,8 +302,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         borderColor: '#FF9F0A',
                         backgroundColor: 'transparent',
                         borderDash: [4, 4],
-                        tension: 0.3,
-                        pointRadius: 2
+                        tension: 0.35,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
                     },
                     {
                         label: 'Forecast Upper Bound (Range)',
