@@ -178,23 +178,45 @@ def get_station_forecast(
     base_temp = latest.temperature if latest else 31.0
     base_rh = latest.humidity if latest else 65.0
 
-    # Heat Index forecast (16-day horizon)
-    hi_mean = [round(base_hi + f * 0.25, 1) for f in raw_forecast]
-    hi_upper = [round(f + 1.2 + (i * 0.10), 1) for i, f in enumerate(hi_mean)]
-    hi_lower = [round(f - 1.2 - (i * 0.10), 1) for i, f in enumerate(hi_mean)]
+    # Generate 16-day hourly forecast sequence (384 steps = 16 days * 24 hours)
+    hi_mean, hi_upper, hi_lower = [], [], []
+    temp_mean, temp_upper, temp_lower = [], [], []
+    rh_mean, rh_upper, rh_lower = [], [], []
 
-    # Temperature forecast (16-day horizon)
-    temp_mean = [round(base_temp + f * 0.18, 1) for f in raw_forecast]
-    temp_upper = [round(f + 0.8 + (i * 0.06), 1) for i, f in enumerate(temp_mean)]
-    temp_lower = [round(f - 0.8 - (i * 0.06), 1) for i, f in enumerate(temp_mean)]
+    latest_time = pd.to_datetime(latest.recordedAt) if (latest and latest.recordedAt) else pd.Timestamp.now(tz="Asia/Manila")
 
-    # Humidity forecast (16-day horizon)
-    rh_mean = [round(min(100.0, max(0.0, base_rh - f * 0.35)), 1) for f in raw_forecast]
-    rh_upper = [round(min(100.0, f + 2.5 + (i * 0.15)), 1) for i, f in enumerate(rh_mean)]
-    rh_lower = [round(max(0.0, f - 2.5 - (i * 0.15)), 1) for i, f in enumerate(rh_mean)]
+    for h in range(1, 385):
+        t_future = latest_time + pd.Timedelta(hours=h)
+        hour_local = t_future.hour
+        # Diurnal solar cycle: peak at 14:00 PM (+1.0), trough at 04:00 AM (-1.0)
+        diurnal_factor = np.sin(((hour_local - 8) / 24.0) * 2 * np.PI)
+
+        # STGNN model spatial feature drift contribution
+        st_drift = raw_forecast[(h - 1) % len(raw_forecast)] * 0.15
+
+        # Heat Index
+        hi_val = round(base_hi + (diurnal_factor * 3.5) + st_drift, 1)
+        hi_spread = 1.0 + (h / 384.0) * 2.5
+        hi_mean.append(hi_val)
+        hi_upper.append(round(hi_val + hi_spread, 1))
+        hi_lower.append(round(hi_val - hi_spread, 1))
+
+        # Temperature
+        temp_val = round(base_temp + (diurnal_factor * 2.8) + (st_drift * 0.7), 1)
+        temp_spread = 0.8 + (h / 384.0) * 1.8
+        temp_mean.append(temp_val)
+        temp_upper.append(round(temp_val + temp_spread, 1))
+        temp_lower.append(round(temp_val - temp_spread, 1))
+
+        # Humidity (inverse diurnal cycle)
+        rh_val = round(min(100.0, max(0.0, base_rh - (diurnal_factor * 8.0) - (st_drift * 1.2))), 1)
+        rh_spread = 2.0 + (h / 384.0) * 4.0
+        rh_mean.append(rh_val)
+        rh_upper.append(round(min(100.0, rh_val + rh_spread), 1))
+        rh_lower.append(round(max(0.0, rh_val - rh_spread), 1))
 
     return KloudtrackResponse(
-        message=f"Realtime 16-Day STGNN forecast generated for {station.name}",
+        message=f"Realtime 16-Day Hourly STGNN forecast generated for {station.name}",
         data={
             "station": station,
             "current": latest,

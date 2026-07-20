@@ -353,11 +353,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 },
                 scales: {
                     x: {
+                        type: 'time',
+                        time: {
+                            displayFormats: {
+                                minute: 'HH:mm',
+                                hour: 'MMM d HH:mm',
+                                day: 'MMM d'
+                            }
+                        },
                         ticks: {
                             color: '#A1A1AA',
-                            maxRotation: 45,
-                            autoSkip: true,
-                            maxTicksLimit: 20
+                            maxRotation: 45
                         },
                         grid: { color: 'rgba(255, 255, 255, 0.06)' }
                     },
@@ -367,14 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Helper to format Date objects as HH:mm
-    function formatTime(d) {
-        const hours = String(d.getHours()).padStart(2, '0');
-        const minutes = String(d.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes}`;
-    }
-
-    // Dynamic Chart Updates with Full 96-step 24h History + 16-step Future Forecast
+    // Dynamic Chart Updates with Full 96-step 24h History + 384-step 16-Day Hourly Forecast
     function updateChartData() {
         if (!chart || !stationData.length) return;
 
@@ -384,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const baseVal = tel[currentMetric] || tel.heatIndex;
         const now = new Date();
-        const stepMs = 15 * 60 * 1000; // 15-minute interval
 
         // Preserve active user pan/zoom scale boundaries across 3-second live updates
         const savedMin = (chart.options.scales.x && chart.options.scales.x.min !== undefined) ? chart.options.scales.x.min : (chart.scales.x ? chart.scales.x.min : undefined);
@@ -405,69 +403,58 @@ document.addEventListener("DOMContentLoaded", () => {
         const numHist = rawHistory.length; // 96
         const rawTimestamps = (fc && fc.history_24h && fc.history_24h.timestamps) ? fc.history_24h.timestamps : [];
 
-        // Build continuous timeline labels from actual PHT timestamps
-        const timeLabels = [];
+        // Build 24h history points ({ x: Date, y: Value })
+        const historyPoints = [];
         let lastDate = now;
 
         for (let i = 0; i < numHist; i++) {
+            let d;
             if (rawTimestamps[i]) {
-                const d = new Date(rawTimestamps[i]);
-                timeLabels.push(formatTime(d));
-                if (i === numHist - 1) lastDate = d;
+                d = new Date(rawTimestamps[i]);
             } else {
-                const t = new Date(now.getTime() - (numHist - 1 - i) * stepMs);
-                timeLabels.push(formatTime(t));
-                if (i === numHist - 1) lastDate = t;
+                d = new Date(now.getTime() - (numHist - 1 - i) * (15 * 60 * 1000));
             }
+            if (i === numHist - 1) lastDate = d;
+            historyPoints.push({ x: d, y: rawHistory[i] });
         }
 
-        // Add 16 daily forecast step labels into the future (16 Days horizon)
-        const dayMs = 24 * 60 * 60 * 1000;
-        for (let step = 1; step <= 16; step++) {
-            const t = new Date(lastDate.getTime() + step * dayMs);
-            const dateStr = t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            timeLabels.push(`Day +${step} (${dateStr})`);
-        }
-
-        // Dataset 0: History (96 values followed by nulls for forecast window)
-        const historyData = [...rawHistory, ...Array(16).fill(null)];
-
-        // Extract 16 forecast mean, upper, lower bounds for the active metric
+        // Extract 384 forecast hourly mean, upper, lower bounds for 16 Days
         let rawMean = [];
         let rawUpper = [];
         let rawLower = [];
 
-        const metricFc = (fc && fc.forecast_16step && fc.forecast_16step[currentMetric])
-            ? fc.forecast_16step[currentMetric]
-            : (fc && fc.forecast_16step ? fc.forecast_16step : null);
+        const metricFc = (fc && fc.forecast_16day && fc.forecast_16day[currentMetric])
+            ? fc.forecast_16day[currentMetric]
+            : ((fc && fc.forecast_16step && fc.forecast_16step[currentMetric]) ? fc.forecast_16step[currentMetric] : null);
 
         if (metricFc && metricFc.mean) {
             rawMean = metricFc.mean.map(v => parseFloat(v.toFixed(1)));
             rawUpper = metricFc.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
             rawLower = metricFc.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
-        } else {
-            for (let step = 1; step <= 16; step++) {
-                const trend = Math.sin((step / 16) * Math.PI) * 2.5;
-                const mean = baseVal + trend + (Math.random() - 0.5) * 0.3;
-                const spread = 0.5 + (step / 16) * 1.5;
-                rawMean.push(parseFloat(mean.toFixed(1)));
-                rawUpper.push(parseFloat((mean + spread).toFixed(1)));
-                rawLower.push(parseFloat((mean - spread).toFixed(1)));
-            }
         }
 
-        // Forecast datasets start at index 95 (Now) so lines connect smoothly
-        const forecastMeanData = [...Array(numHist - 1).fill(null), parseFloat(baseVal.toFixed(1)), ...rawMean];
-        const forecastUpperData = [...Array(numHist - 1).fill(null), parseFloat(baseVal.toFixed(1)), ...rawUpper];
-        const forecastLowerData = [...Array(numHist - 1).fill(null), parseFloat(baseVal.toFixed(1)), ...rawLower];
+        const forecastMeanPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastUpperPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastLowerPoints = [{ x: lastDate, y: parseFloat(baseVal.toFixed(1)) }];
 
-        chart.data.labels = timeLabels;
+        const hourMs = 60 * 60 * 1000;
+        rawMean.forEach((m, idx) => {
+            const t = new Date(lastDate.getTime() + (idx + 1) * hourMs);
+            const meanVal = parseFloat(m.toFixed(1));
+            const upperVal = parseFloat((rawUpper[idx] || meanVal + 1.5).toFixed(1));
+            const lowerVal = parseFloat((rawLower[idx] || meanVal - 1.5).toFixed(1));
+
+            forecastMeanPoints.push({ x: t, y: meanVal });
+            forecastUpperPoints.push({ x: t, y: upperVal });
+            forecastLowerPoints.push({ x: t, y: lowerVal });
+        });
+
         chart.data.datasets[0].label = `24h History ${currentMetric.toUpperCase()} (°C)`;
-        chart.data.datasets[0].data = historyData;
+        chart.data.datasets[0].data = historyPoints;
 
-        chart.data.datasets[1].data = forecastMeanData;
-        chart.data.datasets[2].data = forecastUpperData;
-        chart.data.datasets[3].data = forecastLowerData;
+        chart.data.datasets[1].data = forecastMeanPoints;
+        chart.data.datasets[2].data = forecastUpperPoints;
+        chart.data.datasets[3].data = forecastLowerPoints;
 
         if (savedMin !== undefined && savedMax !== undefined) {
             chart.options.scales.x.min = savedMin;
