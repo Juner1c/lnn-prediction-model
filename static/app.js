@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         pointRadius: 2
                     },
                     {
-                        label: '16-Step Mean Forecast (°C)',
+                        label: '16-Day Mean Forecast (°C)',
                         data: [],
                         borderColor: '#FF9F0A',
                         backgroundColor: 'transparent',
@@ -421,10 +421,12 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // Add 16 forecast step labels into the future starting from last recorded timestamp
+        // Add 16 daily forecast step labels into the future (16 Days horizon)
+        const dayMs = 24 * 60 * 60 * 1000;
         for (let step = 1; step <= 16; step++) {
-            const t = new Date(lastDate.getTime() + step * stepMs);
-            timeLabels.push(`+${step * 15}m (${formatTime(t)})`);
+            const t = new Date(lastDate.getTime() + step * dayMs);
+            const dateStr = t.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            timeLabels.push(`Day +${step} (${dateStr})`);
         }
 
         // Dataset 0: History (96 values followed by nulls for forecast window)

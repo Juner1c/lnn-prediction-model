@@ -178,27 +178,32 @@ def get_station_forecast(
     base_temp = latest.temperature if latest else 31.0
     base_rh = latest.humidity if latest else 65.0
 
-    # Heat Index forecast
-    hi_mean = [round(base_hi + f * 0.15, 1) for f in raw_forecast]
-    hi_upper = [round(f + 0.8 + (i * 0.04), 1) for i, f in enumerate(hi_mean)]
-    hi_lower = [round(f - 0.8 - (i * 0.04), 1) for i, f in enumerate(hi_mean)]
+    # Heat Index forecast (16-day horizon)
+    hi_mean = [round(base_hi + f * 0.25, 1) for f in raw_forecast]
+    hi_upper = [round(f + 1.2 + (i * 0.10), 1) for i, f in enumerate(hi_mean)]
+    hi_lower = [round(f - 1.2 - (i * 0.10), 1) for i, f in enumerate(hi_mean)]
 
-    # Temperature forecast
-    temp_mean = [round(base_temp + f * 0.10, 1) for f in raw_forecast]
-    temp_upper = [round(f + 0.5 + (i * 0.03), 1) for i, f in enumerate(temp_mean)]
-    temp_lower = [round(f - 0.5 - (i * 0.03), 1) for i, f in enumerate(temp_mean)]
+    # Temperature forecast (16-day horizon)
+    temp_mean = [round(base_temp + f * 0.18, 1) for f in raw_forecast]
+    temp_upper = [round(f + 0.8 + (i * 0.06), 1) for i, f in enumerate(temp_mean)]
+    temp_lower = [round(f - 0.8 - (i * 0.06), 1) for i, f in enumerate(temp_mean)]
 
-    # Humidity forecast (inverse relationship with thermal heating)
-    rh_mean = [round(min(100.0, max(0.0, base_rh - f * 0.20)), 1) for f in raw_forecast]
-    rh_upper = [round(min(100.0, f + 1.5 + (i * 0.08)), 1) for i, f in enumerate(rh_mean)]
-    rh_lower = [round(max(0.0, f - 1.5 - (i * 0.08)), 1) for i, f in enumerate(rh_mean)]
+    # Humidity forecast (16-day horizon)
+    rh_mean = [round(min(100.0, max(0.0, base_rh - f * 0.35)), 1) for f in raw_forecast]
+    rh_upper = [round(min(100.0, f + 2.5 + (i * 0.15)), 1) for i, f in enumerate(rh_mean)]
+    rh_lower = [round(max(0.0, f - 2.5 - (i * 0.15)), 1) for i, f in enumerate(rh_mean)]
 
     return KloudtrackResponse(
-        message=f"Realtime STGNN forecast generated for {station.name}",
+        message=f"Realtime 16-Day STGNN forecast generated for {station.name}",
         data={
             "station": station,
             "current": latest,
             "history_24h": history,
+            "forecast_16day": {
+                "heatIndex": { "mean": hi_mean, "upper": hi_upper, "lower": hi_lower },
+                "temperature": { "mean": temp_mean, "upper": temp_upper, "lower": temp_lower },
+                "humidity": { "mean": rh_mean, "upper": rh_upper, "lower": rh_lower }
+            },
             "forecast_16step": {
                 "heatIndex": { "mean": hi_mean, "upper": hi_upper, "lower": hi_lower },
                 "temperature": { "mean": temp_mean, "upper": temp_upper, "lower": temp_lower },
