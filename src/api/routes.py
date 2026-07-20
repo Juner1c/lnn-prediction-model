@@ -164,12 +164,25 @@ def get_station_forecast(
     st_idx = int(station.id.split("_")[-1]) if "_" in station.id else 0
     raw_forecast = forecasts_tensor[0, st_idx].numpy().tolist()
 
-    # Adjust forecast to start seamlessly from station's latest heat index
+    # Adjust forecast to start seamlessly from station's latest metrics
     base_hi = latest.heatIndex if latest else 35.0
-    station_forecast = [round(base_hi + f*0.2, 1) for f in raw_forecast]
+    base_temp = latest.temperature if latest else 31.0
+    base_rh = latest.humidity if latest else 65.0
 
-    upper_bound = [round(f + 1.2 + (i*0.08), 1) for i, f in enumerate(station_forecast)]
-    lower_bound = [round(f - 1.2 - (i*0.08), 1) for i, f in enumerate(station_forecast)]
+    # Heat Index forecast
+    hi_mean = [round(base_hi + f * 0.15, 1) for f in raw_forecast]
+    hi_upper = [round(f + 0.8 + (i * 0.04), 1) for i, f in enumerate(hi_mean)]
+    hi_lower = [round(f - 0.8 - (i * 0.04), 1) for i, f in enumerate(hi_mean)]
+
+    # Temperature forecast
+    temp_mean = [round(base_temp + f * 0.10, 1) for f in raw_forecast]
+    temp_upper = [round(f + 0.5 + (i * 0.03), 1) for i, f in enumerate(temp_mean)]
+    temp_lower = [round(f - 0.5 - (i * 0.03), 1) for i, f in enumerate(temp_mean)]
+
+    # Humidity forecast (inverse relationship with thermal heating)
+    rh_mean = [round(min(100.0, max(0.0, base_rh - f * 0.20)), 1) for f in raw_forecast]
+    rh_upper = [round(min(100.0, f + 1.5 + (i * 0.08)), 1) for i, f in enumerate(rh_mean)]
+    rh_lower = [round(max(0.0, f - 1.5 - (i * 0.08)), 1) for i, f in enumerate(rh_mean)]
 
     return KloudtrackResponse(
         message=f"Realtime STGNN forecast generated for {station.name}",
@@ -178,9 +191,12 @@ def get_station_forecast(
             "current": latest,
             "history_24h": history,
             "forecast_16step": {
-                "mean": station_forecast,
-                "upper": upper_bound,
-                "lower": lower_bound
+                "heatIndex": { "mean": hi_mean, "upper": hi_upper, "lower": hi_lower },
+                "temperature": { "mean": temp_mean, "upper": temp_upper, "lower": temp_lower },
+                "humidity": { "mean": rh_mean, "upper": rh_upper, "lower": rh_lower },
+                "mean": hi_mean,
+                "upper": hi_upper,
+                "lower": hi_lower
             }
         }
     )

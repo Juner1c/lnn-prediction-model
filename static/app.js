@@ -415,15 +415,19 @@ document.addEventListener("DOMContentLoaded", () => {
         // Dataset 0: History (96 values followed by nulls for forecast window)
         const historyData = [...rawHistory, ...Array(16).fill(null)];
 
-        // Extract 16 forecast mean, upper, lower bounds
+        // Extract 16 forecast mean, upper, lower bounds for the active metric
         let rawMean = [];
         let rawUpper = [];
         let rawLower = [];
 
-        if (fc && fc.forecast_16step && fc.forecast_16step.mean) {
-            rawMean = fc.forecast_16step.mean.map(v => parseFloat(v.toFixed(1)));
-            rawUpper = fc.forecast_16step.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
-            rawLower = fc.forecast_16step.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
+        const metricFc = (fc && fc.forecast_16step && fc.forecast_16step[currentMetric])
+            ? fc.forecast_16step[currentMetric]
+            : (fc && fc.forecast_16step ? fc.forecast_16step : null);
+
+        if (metricFc && metricFc.mean) {
+            rawMean = metricFc.mean.map(v => parseFloat(v.toFixed(1)));
+            rawUpper = metricFc.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
+            rawLower = metricFc.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
         } else {
             for (let step = 1; step <= 16; step++) {
                 const trend = Math.sin((step / 16) * Math.PI) * 2.5;
