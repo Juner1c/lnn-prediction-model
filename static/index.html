@@ -25,6 +25,7 @@
                 <h1>KLOUDTECH<span> / LNN HEAT-INDEX</span></h1>
             </div>
             <div class="header-actions">
+                <button class="btn-action active-toggle" id="btn-toggle-heatmap">Heatmap Overlay: ON</button>
                 <button class="btn-action" id="btn-reset-zoom">Reset Graph Zoom</button>
                 <button class="btn-action" id="btn-refresh-now">Refresh Realtime Data</button>
             </div>
@@ -35,7 +36,7 @@
             <!-- Left Panel: Stations & Live Map -->
             <section class="panel panel-map">
                 <div class="panel-header">
-                    <h2>Central Luzon Weather Station Network</h2>
+                    <h2>Central Luzon Weather Station Network & IDW Heatmap</h2>
                 </div>
                 <div id="map" class="map-container"></div>
                 
@@ -67,8 +68,8 @@
                     </div>
 
                     <div class="metric-card">
-                        <span class="metric-label">LNN Denoising Latency</span>
-                        <span class="metric-value text-cyan" id="latency-value">-- ms</span>
+                        <span class="metric-label">Heat Vulnerability Index</span>
+                        <span class="metric-value text-cyan" id="hvi-value">--</span>
                     </div>
                 </div>
 
@@ -92,11 +93,15 @@
         </main>
     </div>
 
-    <!-- Leaflet JS -->
+    <!-- Leaflet JS & Leaflet Heat -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Chart.js & Zoom Plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <!-- Chart.js, Date Adapter & Zoom Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
     <!-- Custom App JS -->
     <script src="/static/app.js"></script>
 </body>

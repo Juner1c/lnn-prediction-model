@@ -3,6 +3,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const HEADERS = { "x-kloudtrack-key": API_KEY, "Content-Type": "application/json" };
 
     let map = null;
+    let heatLayer = null;
+    let isHeatmapVisible = true;
     let chart = null;
     let markersMap = {};
     let stationData = [];
@@ -30,6 +32,70 @@ document.addEventListener("DOMContentLoaded", () => {
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
+    }
+
+    // Calculate Inverse Distance Weighting (IDW) spatial interpolation
+    function renderIDWHeatmap() {
+        if (!map || !window.L || !L.heatLayer || !stationData.length) return;
+
+        const gridPoints = [];
+        const lats = stationData.map(d => d.station.latitude);
+        const lons = stationData.map(d => d.station.longitude);
+
+        const minLat = Math.min(...lats) - 0.2;
+        const maxLat = Math.max(...lats) + 0.2;
+        const minLon = Math.min(...lons) - 0.2;
+        const maxLon = Math.max(...lons) + 0.2;
+
+        const step = 0.04; // ~4km grid step
+
+        for (let lat = minLat; lat <= maxLat; lat += step) {
+            for (let lon = minLon; lon <= maxLon; lon += step) {
+                let weightSum = 0;
+                let valSum = 0;
+
+                stationData.forEach(item => {
+                    const d = haversine(lat, lon, item.station.latitude, item.station.longitude);
+                    const w = 1 / Math.pow(Math.max(d, 0.5), 2); // IDW power p=2
+                    weightSum += w;
+                    valSum += w * item.telemetry.heatIndex;
+                });
+
+                const interpHI = valSum / weightSum;
+                const normalizedIntensity = Math.min(1.0, Math.max(0.1, (interpHI - 25.0) / 20.0));
+                gridPoints.push([lat, lon, normalizedIntensity]);
+            }
+        }
+
+        if (heatLayer) map.removeLayer(heatLayer);
+
+        if (isHeatmapVisible) {
+            heatLayer = L.heatLayer(gridPoints, {
+                radius: 25,
+                blur: 18,
+                maxZoom: 14,
+                gradient: { 0.3: '#FFD60A', 0.65: '#FF9F0A', 1.0: '#FF4500' }
+            }).addTo(map);
+        }
+    }
+
+    function haversine(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    // Heat Vulnerability Index (HVI) calculation formula
+    function calculateHVI(hi, temp, rh) {
+        const normHI = Math.min(1.0, Math.max(0.0, (hi - 20.0) / 35.0));
+        const normTemp = Math.min(1.0, Math.max(0.0, (temp - 20.0) / 25.0));
+        const normRH = Math.min(1.0, Math.max(0.0, rh / 100.0));
+        const hvi = (0.5 * normHI) + (0.3 * normTemp) + (0.2 * normRH);
+        return parseFloat(hvi.toFixed(2));
     }
 
     // Risk category helper
@@ -75,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-        // Fetch station-specific STGNN forecast for active station
         await fetchStationForecast(activeStationId);
 
         updateUIComponents();
@@ -92,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         } catch (e) {
-            // Silently fallback
+            // Fallback
         }
     }
 
@@ -110,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateUIComponents() {
         renderStationCards();
         renderMapMarkers();
+        renderIDWHeatmap();
         updateBannerMetrics();
         updateChartData();
     }
@@ -170,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     color: "#FFFFFF",
                     weight: 2,
                     opacity: 1,
-                    fillOpacity: 0.9
+                    fillOpacity: 0.95
                 }).addTo(map);
 
                 marker.on("click", async () => {
@@ -195,6 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentStation = stationData.find(item => item.station.id === activeStationId) || stationData[0];
         const tel = currentStation.telemetry;
         const risk = getRiskLevel(tel.heatIndex);
+        const hvi = calculateHVI(tel.heatIndex, tel.temperature, tel.humidity);
 
         // Update active station title on chart card
         const titleEl = document.getElementById("active-station-title");
@@ -208,27 +275,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.getElementById("avg-temp-value").textContent = `${tel.temperature.toFixed(1)}°C`;
         document.getElementById("avg-humidity-value").textContent = `${tel.humidity.toFixed(1)}%`;
-        document.getElementById("latency-value").textContent = `${(11.0 + (intHash(activeStationId) % 8)).toFixed(1)} ms`;
+        document.getElementById("hvi-value").textContent = `${hvi} (High)`;
     }
 
-    function intHash(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) hash = (hash << 5) - hash + str.charCodeAt(i);
-        return Math.abs(hash);
-    }
-
-    // Initialize Chart.js with Mouse Wheel Zoom & Direct Drag Pan Plugin
+    // Initialize Chart.js with Dynamic Time Scale & Date Adaptation
     function initChart() {
         const ctx = document.getElementById("telemetryChart").getContext("2d");
-
-        const historyLabels = Array.from({length: 24}, (_, i) => `${i}:00`);
-        const forecastLabels = Array.from({length: 16}, (_, i) => `+${(i+1)*15}m`);
-        const labels = [...historyLabels, ...forecastLabels];
 
         chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
                 datasets: [
                     {
                         label: '24h Realtime History (°C)',
@@ -279,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         pan: {
                             enabled: true,
                             mode: 'x',
-                            modifierKey: null // Enable direct mouse drag panning without holding keys
+                            modifierKey: null
                         },
                         zoom: {
                             wheel: {
@@ -294,14 +350,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 },
                 scales: {
-                    x: { ticks: { color: '#A1A1AA' }, grid: { color: 'rgba(255, 255, 255, 0.06)' } },
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'hour',
+                            displayFormats: {
+                                minute: 'HH:mm',
+                                hour: 'HH:mm',
+                                day: 'MMM d HH:mm'
+                            }
+                        },
+                        ticks: { color: '#A1A1AA', maxRotation: 45 },
+                        grid: { color: 'rgba(255, 255, 255, 0.06)' }
+                    },
                     y: { ticks: { color: '#A1A1AA' }, grid: { color: 'rgba(255, 255, 255, 0.06)' } }
                 }
             }
         });
     }
 
-    // Dynamic Chart Updates per Station
+    // Dynamic Chart Updates with Real-Time Timestamps & Zoom Adaptation
     function updateChartData() {
         if (!chart || !stationData.length) return;
 
@@ -310,27 +378,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const fc = stationForecasts[activeStationId];
 
         const baseVal = tel[currentMetric] || tel.heatIndex;
+        const now = Date.now();
+        const stepMs = 15 * 60 * 1000; // 15-minute intervals in ms
 
-        // Retrieve or generate 24h history curve for selected station
-        let historyData = [];
+        // Construct 24h history timestamp objects ending at now
+        let historyValues = [];
         if (fc && fc.history_24h && fc.history_24h[currentMetric]) {
-            historyData = fc.history_24h[currentMetric].slice(-24).map(v => parseFloat(v.toFixed(1)));
+            historyValues = fc.history_24h[currentMetric].slice(-24).map(v => parseFloat(v.toFixed(1)));
         } else {
-            historyData = Array.from({length: 24}, (_, i) => {
+            historyValues = Array.from({length: 24}, (_, i) => {
                 const delta = Math.sin((i / 24) * Math.PI * 2) * 4.0;
                 return parseFloat((baseVal - 3.5 + delta).toFixed(1));
             });
         }
-        historyData[23] = parseFloat(baseVal.toFixed(1));
+        historyValues[23] = parseFloat(baseVal.toFixed(1));
 
-        // Retrieve or generate 16-step forecast with range bounds
-        const forecastMean = Array(24).fill(null);
-        const forecastUpper = Array(24).fill(null);
-        const forecastLower = Array(24).fill(null);
+        const historyPoints = historyValues.map((val, idx) => ({
+            x: now - (23 - idx) * stepMs,
+            y: val
+        }));
 
-        forecastMean[23] = baseVal;
-        forecastUpper[23] = baseVal;
-        forecastLower[23] = baseVal;
+        // Construct 16-step forecast points with timestamps into the future
+        const forecastMeanPoints = [{ x: now, y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastUpperPoints = [{ x: now, y: parseFloat(baseVal.toFixed(1)) }];
+        const forecastLowerPoints = [{ x: now, y: parseFloat(baseVal.toFixed(1)) }];
 
         if (fc && fc.forecast_16step && fc.forecast_16step.mean) {
             const rawMean = fc.forecast_16step.mean;
@@ -338,28 +409,34 @@ document.addEventListener("DOMContentLoaded", () => {
             const rawLower = fc.forecast_16step.lower;
 
             rawMean.forEach((m, idx) => {
-                forecastMean.push(parseFloat(m.toFixed(1)));
-                forecastUpper.push(parseFloat((rawUpper[idx] || m + 1.2).toFixed(1)));
-                forecastLower.push(parseFloat((rawLower[idx] || m - 1.2).toFixed(1)));
+                const tMs = now + (idx + 1) * stepMs;
+                const meanVal = parseFloat(m.toFixed(1));
+                const upperVal = parseFloat((rawUpper[idx] || m + 1.2).toFixed(1));
+                const lowerVal = parseFloat((rawLower[idx] || m - 1.2).toFixed(1));
+
+                forecastMeanPoints.push({ x: tMs, y: meanVal });
+                forecastUpperPoints.push({ x: tMs, y: upperVal });
+                forecastLowerPoints.push({ x: tMs, y: lowerVal });
             });
         } else {
             for (let step = 1; step <= 16; step++) {
+                const tMs = now + step * stepMs;
                 const trend = Math.sin((step / 16) * Math.PI) * 2.5;
                 const mean = baseVal + trend + (Math.random() - 0.5) * 0.3;
                 const spread = 0.5 + (step / 16) * 1.5;
 
-                forecastMean.push(parseFloat(mean.toFixed(1)));
-                forecastUpper.push(parseFloat((mean + spread).toFixed(1)));
-                forecastLower.push(parseFloat((mean - spread).toFixed(1)));
+                forecastMeanPoints.push({ x: tMs, y: parseFloat(mean.toFixed(1)) });
+                forecastUpperPoints.push({ x: tMs, y: parseFloat((mean + spread).toFixed(1)) });
+                forecastLowerPoints.push({ x: tMs, y: parseFloat((mean - spread).toFixed(1)) });
             }
         }
 
         chart.data.datasets[0].label = `24h History ${currentMetric.toUpperCase()} (°C)`;
-        chart.data.datasets[0].data = historyData;
+        chart.data.datasets[0].data = historyPoints;
 
-        chart.data.datasets[1].data = forecastMean;
-        chart.data.datasets[2].data = forecastUpper;
-        chart.data.datasets[3].data = forecastLower;
+        chart.data.datasets[1].data = forecastMeanPoints;
+        chart.data.datasets[2].data = forecastUpperPoints;
+        chart.data.datasets[3].data = forecastLowerPoints;
 
         chart.update('none');
     }
@@ -379,6 +456,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnHI) btnHI.addEventListener("click", () => setActiveTab(btnHI, "heatIndex"));
     if (btnTemp) btnTemp.addEventListener("click", () => setActiveTab(btnTemp, "temperature"));
     if (btnRH) btnRH.addEventListener("click", () => setActiveTab(btnRH, "humidity"));
+
+    // Heatmap Overlay Toggle Button
+    const btnToggleHeatmap = document.getElementById("btn-toggle-heatmap");
+    if (btnToggleHeatmap) {
+        btnToggleHeatmap.addEventListener("click", () => {
+            isHeatmapVisible = !isHeatmapVisible;
+            btnToggleHeatmap.textContent = isHeatmapVisible ? "Heatmap Overlay: ON" : "Heatmap Overlay: OFF";
+            btnToggleHeatmap.classList.toggle("active-toggle", isHeatmapVisible);
+            renderIDWHeatmap();
+        });
+    }
 
     // Header Action Buttons
     const btnResetZoom = document.getElementById("btn-reset-zoom");
