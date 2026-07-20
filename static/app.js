@@ -336,7 +336,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         pan: {
                             enabled: true,
                             mode: 'x',
-                            modifierKey: null
+                            modifierKey: null,
+                            threshold: 0
                         },
                         zoom: {
                             wheel: {
@@ -384,6 +385,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const baseVal = tel[currentMetric] || tel.heatIndex;
         const now = new Date();
         const stepMs = 15 * 60 * 1000; // 15-minute interval
+
+        // Preserve active user pan/zoom scale boundaries across 3-second live updates
+        const savedMin = (chart.options.scales.x && chart.options.scales.x.min !== undefined) ? chart.options.scales.x.min : (chart.scales.x ? chart.scales.x.min : undefined);
+        const savedMax = (chart.options.scales.x && chart.options.scales.x.max !== undefined) ? chart.options.scales.x.max : (chart.scales.x ? chart.scales.x.max : undefined);
 
         // Extract full 96 history values (24 hours at 15-min steps)
         let rawHistory = [];
@@ -461,6 +466,11 @@ document.addEventListener("DOMContentLoaded", () => {
         chart.data.datasets[1].data = forecastMeanData;
         chart.data.datasets[2].data = forecastUpperData;
         chart.data.datasets[3].data = forecastLowerData;
+
+        if (savedMin !== undefined && savedMax !== undefined) {
+            chart.options.scales.x.min = savedMin;
+            chart.options.scales.x.max = savedMax;
+        }
 
         chart.update('none');
     }
