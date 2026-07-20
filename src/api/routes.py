@@ -60,9 +60,14 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
     
     if os.path.exists(CSV_PATH):
         try:
+            now_utc = pd.Timestamp.now(tz="UTC")
             df = pd.read_csv(CSV_PATH)
+            df["dt_utc"] = pd.to_datetime(df["time"], utc=True)
+
             for idx, station in enumerate(MOCK_STATIONS):
-                st_df = df[df["location_id"] == idx].tail(96)
+                st_full = df[df["location_id"] == idx]
+                valid_df = st_full[st_full["dt_utc"] <= now_utc]
+                st_df = (valid_df.tail(96) if not valid_df.empty else st_full.tail(96)).copy()
                 if not st_df.empty:
                     latest = st_df.iloc[-1]
                     t = float(latest["temperature_2m (°C)"])
@@ -73,8 +78,7 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
                     hi = calculate_heat_index(t, rh)
 
                     # Convert UTC timestamps in CSV to Asia/Manila (UTC+8) for correct local diurnal alignment
-                    st_df = st_df.copy()
-                    st_df["datetime_pht"] = pd.to_datetime(st_df["time"], utc=True).dt.tz_convert("Asia/Manila")
+                    st_df["datetime_pht"] = st_df["dt_utc"].dt.tz_convert("Asia/Manila")
                     timestamps_pht = st_df["datetime_pht"].dt.strftime("%Y-%m-%dT%H:%M:%S%z").tolist()
 
                     # Extract 24h history sequence (96 steps)
