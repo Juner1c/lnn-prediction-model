@@ -189,7 +189,7 @@ def get_station_forecast(
         t_future = latest_time + pd.Timedelta(hours=h)
         hour_local = t_future.hour
         # Diurnal solar cycle: peak at 14:00 PM (+1.0), trough at 04:00 AM (-1.0)
-        diurnal_factor = np.sin(((hour_local - 8) / 24.0) * 2 * np.PI)
+        diurnal_factor = np.sin(((hour_local - 8) / 24.0) * 2 * np.pi)
 
         # STGNN model spatial feature drift contribution
         st_drift = raw_forecast[(h - 1) % len(raw_forecast)] * 0.15
