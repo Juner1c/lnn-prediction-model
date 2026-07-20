@@ -477,13 +477,23 @@ document.addEventListener("DOMContentLoaded", () => {
         chart.data.datasets[2].data = forecastUpperPoints;
         chart.data.datasets[3].data = forecastLowerPoints;
 
-        // Apply scale boundaries ONLY if they are valid epoch timestamps in milliseconds (> year 2000)
-        if (typeof savedMin === 'number' && savedMin > 1000000000000 && typeof savedMax === 'number' && savedMax > 1000000000000) {
+        const startHistMs = historyPoints[0].x;
+        const endFcMs = forecastMeanPoints[forecastMeanPoints.length - 1].x;
+
+        // Set strict zoom/pan limits to data boundaries so chart never pans into empty space
+        if (chart.options.plugins && chart.options.plugins.zoom) {
+            chart.options.plugins.zoom.limits = {
+                x: { min: startHistMs, max: endFcMs, minRange: 3600000 * 6 } // min 6h zoom
+            };
+        }
+
+        // Apply scale boundaries: restore saved pan/zoom if valid, otherwise set default 5-day initial view window
+        if (typeof savedMin === 'number' && savedMin >= startHistMs && typeof savedMax === 'number' && savedMax <= endFcMs + 3600000) {
             chart.options.scales.x.min = savedMin;
             chart.options.scales.x.max = savedMax;
         } else {
-            delete chart.options.scales.x.min;
-            delete chart.options.scales.x.max;
+            chart.options.scales.x.min = startHistMs;
+            chart.options.scales.x.max = startHistMs + (5 * 24 * 60 * 60 * 1000); // 5-day default view (24h hist + 4d forecast)
         }
 
         chart.update('none');

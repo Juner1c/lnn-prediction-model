@@ -14,6 +14,10 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Client-Side Fallback Guarantee**: Frontend Chart.js time scales must always provide fallback dataset point generation if live telemetry or forecast endpoints return errors or pending responses, ensuring UI charts never render empty timelines.
 - **Python NumPy Constant Standard**: Always use `np.pi` (lowercase) for mathematical constant definitions in API endpoints.
 
+### Chart.js Time Scale Range Limits & Focused Default View Window Rule
+- **Explicit Range Limits**: When binding long-range time series datasets (e.g. 30-Day forecast timelines), always configure `zoom.limits.x` with `min` set to the earliest history timestamp and `max` set to the latest forecast timestamp, preventing Chart.js from auto-scaling into empty pre-history/post-forecast space.
+- **Proportional Default View Window**: Set default initial view bounds (`chart.options.scales.x.min` and `max`) to a focused 5-day window (`history_start` to `history_start + 5 days`) so 24h history curves render smoothly without compressing into narrow spikes, while preserving drag-panning across the entire 30-day forecast horizon.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
