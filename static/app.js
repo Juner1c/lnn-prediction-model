@@ -372,12 +372,61 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
-        // Set cursor grab styling for free pan dragging
+        // Direct click-and-drag mouse panning on canvas
         const chartCanvas = document.getElementById("telemetryChart");
         if (chartCanvas) {
+            let isDragging = false;
+            let startX = 0;
+            let startMin = 0;
+            let startMax = 0;
+
             chartCanvas.style.cursor = "grab";
-            chartCanvas.addEventListener("mousedown", () => { chartCanvas.style.cursor = "grabbing"; });
-            chartCanvas.addEventListener("mouseup", () => { chartCanvas.style.cursor = "grab"; });
+
+            chartCanvas.addEventListener("mousedown", (e) => {
+                if (!chart || !chart.scales || !chart.scales.x) return;
+                isDragging = true;
+                startX = e.clientX;
+                startMin = chart.scales.x.min;
+                startMax = chart.scales.x.max;
+                chartCanvas.style.cursor = "grabbing";
+            });
+
+            window.addEventListener("mousemove", (e) => {
+                if (!isDragging || !chart || !chart.scales || !chart.scales.x) return;
+                const rect = chartCanvas.getBoundingClientRect();
+                const chartWidth = rect.width;
+                if (chartWidth <= 0) return;
+
+                const dx = e.clientX - startX;
+                const timeSpan = startMax - startMin;
+                const shiftMs = -(dx / chartWidth) * timeSpan;
+
+                let newMin = startMin + shiftMs;
+                let newMax = startMax + shiftMs;
+
+                const limits = chart.options.plugins && chart.options.plugins.zoom && chart.options.plugins.zoom.limits ? chart.options.plugins.zoom.limits.x : null;
+                if (limits) {
+                    if (newMin < limits.min) {
+                        newMin = limits.min;
+                        newMax = limits.min + timeSpan;
+                    }
+                    if (newMax > limits.max) {
+                        newMax = limits.max;
+                        newMin = limits.max - timeSpan;
+                    }
+                }
+
+                chart.options.scales.x.min = newMin;
+                chart.options.scales.x.max = newMax;
+                chart.update('none');
+            });
+
+            window.addEventListener("mouseup", () => {
+                if (isDragging) {
+                    isDragging = false;
+                    chartCanvas.style.cursor = "grab";
+                }
+            });
         }
     }
 
