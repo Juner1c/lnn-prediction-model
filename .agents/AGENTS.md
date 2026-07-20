@@ -18,6 +18,10 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Explicit Range Limits**: When binding long-range time series datasets (e.g. 30-Day forecast timelines), always configure `zoom.limits.x` with `min` set to the earliest history timestamp and `max` set to the latest forecast timestamp, preventing Chart.js from auto-scaling into empty pre-history/post-forecast space.
 - **Proportional Default View Window**: Set default initial view bounds (`chart.options.scales.x.min` and `max`) to a focused 5-day window (`history_start` to `history_start + 5 days`) so 24h history curves render smoothly without compressing into narrow spikes, while preserving drag-panning across the entire 30-day forecast horizon.
 
+### Multi-Scale Synoptic Forecast Dynamics & Clean Ribbon Rendering Rule
+- **Synoptic Weather Oscillations**: Multi-day weather forecasts (e.g. 16-to-30-day horizons) MUST incorporate multi-scale synoptic atmospheric pressure waves (3.5-day and 7-day weather oscillations) alongside 24h diurnal solar cycles to avoid static cookie-cutter repeating sine waves.
+- **Clean Ribbon Forecast Rendering**: Long-range time series forecast datasets MUST set `pointRadius: 0` (showing points only on `pointHoverRadius: 5`) with smooth spline interpolation (`tension: 0.35`) to prevent dense sawtooth point clutter.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
