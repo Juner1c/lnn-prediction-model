@@ -6,6 +6,10 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Mandatory Color Palette**: **Yellow-Orange, Black, and White** (`#FFD60A`, `#FF9F0A`, `#FF4500`, `#000000`, `#FFFFFF`).
 - **Constraint**: All UI components, dashboards, CSS variables, charts, badges, map markers, and web design assets MUST adhere strictly to the Yellow-Orange, Black, and White color palette.
 
+### Multi-Metric Time-Series Forecast Alignment Rule
+- **Individual Metric Scaling**: When serving or rendering multi-variable forecasts (e.g., Heat Index, Air Temperature, Relative Humidity), API endpoints and frontend charts MUST compute and display variable-specific forecast arrays relative to each metric's distinct baseline units and physical bounds.
+- **No Cross-Metric Contamination**: Never map a forecast tensor computed for one variable (e.g., Heat Index in °C) directly onto another physical variable (e.g., Relative Humidity in % or Air Temperature in °C).
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
