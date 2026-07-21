@@ -31,12 +31,16 @@ def build_spatial_adjacency_matrix(
 
     lats = locations_df["latitude"].values
     lons = locations_df["longitude"].values
+    elevs = locations_df["elevation"].values / 1000.0 if "elevation" in locations_df.columns else np.zeros(num_nodes)
 
     for i in range(num_nodes):
         for j in range(num_nodes):
             if i != j:
-                d = haversine_distance(lats[i], lons[i], lats[j], lons[j])
-                dist_matrix[i, j] = d
+                d_2d = haversine_distance(lats[i], lons[i], lats[j], lons[j])
+                dz = float(abs(elevs[i] - elevs[j]))
+                d_3d = float(np.sqrt(d_2d ** 2 + dz ** 2))
+                dist_matrix[i, j] = d_3d
+
 
     # Gaussian kernel thresholding
     adj = np.zeros((num_nodes, num_nodes), dtype=np.float32)

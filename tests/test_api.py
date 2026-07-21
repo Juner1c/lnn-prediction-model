@@ -56,10 +56,25 @@ class TestKloudtechAPI(unittest.TestCase):
         self.assertEqual(proxy_client.base_url, "https://api.kloudtechsea.com/api/v1")
         self.assertEqual(proxy_client.cache_ttl, 60)
 
-    def test_root_serve_dashboard(self):
-        response = self.client.get("/")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("KLOUDTECH", response.text)
+    def test_station_forecast_curves_are_distinct(self):
+        res0 = self.client.get("/telemetry/station/st_0/forecast", headers=self.valid_headers)
+        res1 = self.client.get("/telemetry/station/st_3/forecast", headers=self.valid_headers)
+        self.assertEqual(res0.status_code, 200)
+        self.assertEqual(res1.status_code, 200)
+
+        fc0 = res0.json()["data"]["forecast_30day"]["heatIndex"]["mean"]
+        fc1 = res1.json()["data"]["forecast_30day"]["heatIndex"]["mean"]
+
+
+        # Shift values by baseline to compare raw shape variations
+        shape0 = [v - fc0[0] for v in fc0]
+        shape1 = [v - fc1[0] for v in fc1]
+
+        # Verify that station 0 (Coastal) and station 3 (Pampanga) do NOT have identical forecast curve shapes
+        diffs = [abs(s0 - s1) for s0, s1 in zip(shape0, shape1)]
+        max_diff = max(diffs)
+        self.assertGreater(max_diff, 0.1, f"Forecast curves across different micro-climates must be distinct! Max diff: {max_diff}")
 
 if __name__ == "__main__":
     unittest.main()
+

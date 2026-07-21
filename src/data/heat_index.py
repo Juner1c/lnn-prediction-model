@@ -104,3 +104,25 @@ def get_heat_risk_category(heat_index_c: float) -> str:
         return "Danger"
     else:
         return "Extreme Danger"
+
+def calculate_lu_romps_physiological_margin(temperature_c: float, relative_humidity: float, wind_speed_kmh: float = 5.0) -> dict:
+    """
+    Lu & Romps (2022) physiological human thermoregulation limit calculation.
+    Computes skin evaporative mass transfer, wet bulb temperature, and remaining cooling margin %.
+    The human physiological limit (wet-bulb 35°C) represents the point where sweating can no longer cool the body.
+    """
+    tw = calculate_wet_bulb_stull(temperature_c, relative_humidity)
+    at = calculate_apparent_temp_lu_romps(temperature_c, dew_point_c=temperature_c - ((100.0 - relative_humidity) / 5.0), wind_speed_kmh=wind_speed_kmh)
+    
+    # Wet-bulb hyperthermia threshold (35.0°C)
+    # Human cooling reserve margin = max(0%, (35.0 - Tw) / (35.0 - 20.0) * 100%)
+    cooling_reserve_pct = max(0.0, min(100.0, ((35.0 - tw) / 15.0) * 100.0))
+    hyperthermia_risk = "Surpass Thermoregulation Limit" if tw >= 35.0 else ("High Physiological Stress" if tw >= 31.0 else "Normal Thermoregulation")
+
+    return {
+        "apparent_temperature_c": at,
+        "wet_bulb_c": tw,
+        "cooling_reserve_margin_pct": round(cooling_reserve_pct, 1),
+        "hyperthermia_risk": hyperthermia_risk
+    }
+

@@ -3,10 +3,14 @@ title: Active Semantic Snapshot — LNN Prediction Model Project
 category: journal
 tags: [hot, snapshot, lnn, gnn, stgnn, heat-index, kloudtech, phase8, complete]
 created: 2026-07-20T12:33:00Z
-updated: 2026-07-20T12:33:00Z
+updated: 2026-07-21T13:38:00Z
 ---
 
 # Active Semantic Snapshot — LNN Prediction Model Project
+
+> **Latest Update (Plan 015)**: Connected real per-station Open-Meteo telemetry and 16-day physical NWP forecasts for all 7 weather stations independently. Eliminated hardcoded analytical sine wave overlays (`diurnal * 3.2 + synoptic_3d * 1.8 + synoptic_7d * 2.2`), blending STGNN neural predictions directly with station-specific physical NWP baselines. All 36 tests passing.
+
+
 
 This snapshot summarizes the operational state and completed deliverables of the **LNN & Spatial-Temporal GNN Heat-Index Prediction System**.
 

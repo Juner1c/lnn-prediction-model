@@ -5,15 +5,18 @@ from src.data.validator import TelemetryValidator
 from src.data.storage_adapter import LocalStorageAdapter, S3StorageAdapter
 from src.data.ingestion_client import TelemetryIngestionClient
 
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
 class TestDataIngestion(unittest.TestCase):
     def setUp(self):
-        self.test_dir = r"c:\Users\Jhonric Gorillo\Desktop\JHONRIC_FILES\OJT\LNN-Prediction-Model-Project\data\test_raw"
+        self.test_dir = os.path.join(BASE_DIR, "data", "test_raw")
         self.local_storage = LocalStorageAdapter(base_dir=self.test_dir)
         self.s3_storage = S3StorageAdapter()
         self.ingestion_client = TelemetryIngestionClient(
             local_storage=self.local_storage,
             s3_storage=self.s3_storage
         )
+
 
     def tearDown(self):
         if os.path.exists(self.test_dir):
@@ -57,8 +60,9 @@ class TestDataIngestion(unittest.TestCase):
         self.assertIn("s3://weather-telemetry-raw/raw/2026-07-20/station_st_0.json", s3_key)
 
     def test_csv_batch_ingestion(self):
-        clean_csv = r"c:\Users\Jhonric Gorillo\Desktop\JHONRIC_FILES\OJT\LNN-Prediction-Model-Project\data\timeseries_15min_clean.csv"
+        clean_csv = os.path.join(BASE_DIR, "data", "timeseries_15min_clean.csv")
         if os.path.exists(clean_csv):
+
             res = self.ingestion_client.process_csv_batch(clean_csv, limit=20)
             self.assertEqual(res["total_processed"], 20)
             self.assertEqual(res["valid_count"], 20)

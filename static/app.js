@@ -13,15 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
     let currentMetric = "heatIndex"; // "heatIndex" | "temperature" | "humidity"
     let autoUpdateInterval = null;
 
-    // Default 7 stations metadata
-    const DEFAULT_STATIONS = [
-        { id: "st_0", name: "Coastal Station 0", lat: 15.7117, lon: 121.5551, temp: 31.5, rh: 70.0, hi: 39.4 },
-        { id: "st_1", name: "Subic Station 1", lat: 14.8681, lon: 120.2795, temp: 30.2, rh: 65.0, hi: 36.8 },
-        { id: "st_2", name: "Bataan Station 2", lat: 14.7275, lon: 120.3069, temp: 29.8, rh: 68.0, hi: 35.5 },
-        { id: "st_3", name: "Pampanga Station 3", lat: 14.9384, lon: 120.7276, temp: 31.0, rh: 66.0, hi: 37.9 },
-        { id: "st_4", name: "Nueva Ecija Station 4", lat: 15.6414, lon: 121.1017, temp: 32.1, rh: 62.0, hi: 39.1 },
-        { id: "st_5", name: "Central Plain Station 5", lat: 15.5711, lon: 121.0724, temp: 30.9, rh: 67.0, hi: 38.1 },
-        { id: "st_6", name: "San Fernando Station 6", lat: 15.0087, lon: 120.6722, temp: 30.5, rh: 64.0, hi: 36.2 },
+    // Central Luzon 7 Weather Stations Metadata
+    const CENTRAL_LUZON_STATIONS_METADATA = [
+        { id: "st_0", name: "Coastal Station 0", lat: 15.711775, lon: 121.55514 },
+        { id: "st_1", name: "Subic Station 1", lat: 14.86819, lon: 120.279594 },
+        { id: "st_2", name: "Bataan Station 2", lat: 14.727592, lon: 120.30698 },
+        { id: "st_3", name: "Pampanga Station 3", lat: 14.938489, lon: 120.72761 },
+        { id: "st_4", name: "Nueva Ecija Station 4", lat: 15.641477, lon: 121.1017 },
+        { id: "st_5", name: "Central Plain Station 5", lat: 15.571177, lon: 121.07243 },
+        { id: "st_6", name: "San Fernando Station 6", lat: 15.008787, lon: 120.67227 },
     ];
 
     // Initialize Leaflet Map centered on Central Luzon
@@ -116,11 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 stationData = res.data.map(item => {
                     const st = item.station;
                     const tel = item.telemetry || {};
-                    const jitterTemp = (Math.random() - 0.5) * 0.3;
-                    const jitterRH = (Math.random() - 0.5) * 0.8;
-                    const t = (tel.temperature || 31.0) + jitterTemp;
-                    const rh = Math.min(100, Math.max(0, (tel.humidity || 66.0) + jitterRH));
-                    const hi = calculateHeatIndexLocal(t, rh);
+                    const t = tel.temperature || 31.0;
+                    const rh = Math.min(100, Math.max(0, tel.humidity || 66.0));
+                    const hi = tel.heatIndex || calculateHeatIndexLocal(t, rh);
                     return {
                         station: st,
                         telemetry: { temperature: t, humidity: rh, heatIndex: hi }
@@ -129,17 +127,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (e) {
             stationData = DEFAULT_STATIONS.map(st => {
-                const jitterTemp = (Math.random() - 0.5) * 0.3;
-                const jitterRH = (Math.random() - 0.5) * 0.8;
-                const t = st.temp + jitterTemp;
-                const rh = Math.min(100, Math.max(0, st.rh + jitterRH));
-                const hi = calculateHeatIndexLocal(t, rh);
+                const t = st.temp;
+                const rh = Math.min(100, Math.max(0, st.rh));
+                const hi = st.hi || calculateHeatIndexLocal(t, rh);
                 return {
                     station: { id: st.id, name: st.name, latitude: st.lat, longitude: st.lon },
                     telemetry: { temperature: t, humidity: rh, heatIndex: hi }
                 };
             });
         }
+
 
         await fetchStationForecast(activeStationId);
 
@@ -180,43 +177,55 @@ document.addEventListener("DOMContentLoaded", () => {
         updateChartData();
     }
 
-    // Render Station Cards
+    // Render Station Cards efficiently without DOM thrashing
     function renderStationCards() {
         const container = document.getElementById("station-list");
-        container.innerHTML = "";
 
         stationData.forEach(item => {
             const st = item.station;
             const tel = item.telemetry;
+            let card = container.querySelector(`[data-station-id="${st.id}"]`);
 
-            const card = document.createElement("div");
-            card.className = `station-card ${st.id === activeStationId ? 'active' : ''}`;
-            card.setAttribute("tabindex", "0");
-            card.innerHTML = `
-                <div class="station-card-title">${st.name}</div>
-                <div class="station-card-metric">
-                    <span>Temp: ${tel.temperature.toFixed(1)}°C</span>
-                    <span>RH: ${tel.humidity.toFixed(1)}%</span>
-                </div>
-                <div class="station-card-metric">
-                    <span style="color: var(--accent-orange); font-weight:600;">Heat Index:</span>
-                    <strong>${tel.heatIndex.toFixed(1)}°C</strong>
-                </div>
-            `;
+            if (!card) {
+                card = document.createElement("div");
+                card.className = `station-card ${st.id === activeStationId ? 'active' : ''}`;
+                card.setAttribute("data-station-id", st.id);
+                card.setAttribute("tabindex", "0");
+                card.innerHTML = `
+                    <div class="station-card-title">${st.name}</div>
+                    <div class="station-card-metric">
+                        <span class="st-temp">Temp: ${tel.temperature.toFixed(1)}°C</span>
+                        <span class="st-rh">RH: ${tel.humidity.toFixed(1)}%</span>
+                    </div>
+                    <div class="station-card-metric">
+                        <span style="color: var(--accent-orange); font-weight:600;">Heat Index:</span>
+                        <strong class="st-hi">${tel.heatIndex.toFixed(1)}°C</strong>
+                    </div>
+                `;
 
-            card.addEventListener("click", async () => {
-                activeStationId = st.id;
-                document.querySelectorAll(".station-card").forEach(c => c.classList.remove("active"));
-                card.classList.add("active");
-                if (map) map.flyTo([st.latitude, st.longitude], 11);
-                
-                await fetchStationForecast(st.id);
-                updateUIComponents();
-            });
+                card.addEventListener("click", async () => {
+                    activeStationId = st.id;
+                    document.querySelectorAll(".station-card").forEach(c => c.classList.remove("active"));
+                    card.classList.add("active");
+                    if (map) map.flyTo([st.latitude, st.longitude], 11);
+                    
+                    await fetchStationForecast(st.id);
+                    updateUIComponents();
+                });
 
-            container.appendChild(card);
+                container.appendChild(card);
+            } else {
+                card.className = `station-card ${st.id === activeStationId ? 'active' : ''}`;
+                const tempEl = card.querySelector(".st-temp");
+                const rhEl = card.querySelector(".st-rh");
+                const hiEl = card.querySelector(".st-hi");
+                if (tempEl) tempEl.textContent = `Temp: ${tel.temperature.toFixed(1)}°C`;
+                if (rhEl) rhEl.textContent = `RH: ${tel.humidity.toFixed(1)}%`;
+                if (hiEl) hiEl.textContent = `${tel.heatIndex.toFixed(1)}°C`;
+            }
         });
     }
+
 
     // Render Map Markers
     function renderMapMarkers() {
@@ -451,9 +460,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (fc && fc.history_24h && fc.history_24h[currentMetric]) {
             rawHistory = fc.history_24h[currentMetric].map(v => parseFloat(v.toFixed(1)));
         } else {
+            // Smooth realistic 24-hour diurnal profile (1 daily thermal peak at 14:00, 1 trough at 04:00)
             rawHistory = Array.from({length: 96}, (_, i) => {
-                const delta = Math.sin((i / 96) * Math.PI * 4) * 3.5;
-                return parseFloat((baseVal - 3.0 + delta).toFixed(1));
+                const hourOfDay = (now.getHours() - (95 - i) * 0.25 + 24) % 24;
+                const diurnal = Math.sin(((hourOfDay - 8) / 24.0) * 2 * Math.PI);
+                const scale = (currentMetric === 'humidity') ? -6.0 : 3.0;
+                return parseFloat((baseVal + diurnal * scale * (i / 96.0)).toFixed(1));
             });
         }
         rawHistory[rawHistory.length - 1] = parseFloat(baseVal.toFixed(1));
@@ -492,17 +504,19 @@ document.addEventListener("DOMContentLoaded", () => {
             rawUpper = metricFc.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
             rawLower = metricFc.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
         } else {
-            // Generate synthetic 720 hourly forecast points spanning 30 Days (1 Month) if API response is pending/cached
+            // Realistic diurnal continuation spanning 30 Days (1 Month) if API response is pending/cached
             for (let h = 1; h <= 720; h++) {
                 const hourLocal = (lastDate.getHours() + h) % 24;
                 const diurnal = Math.sin(((hourLocal - 8) / 24.0) * 2 * Math.PI);
-                const meanVal = baseVal + (diurnal * (currentMetric === 'humidity' ? -6.0 : 3.0)) + (Math.random() - 0.5) * 0.3;
+                const scale = (currentMetric === 'humidity') ? -6.0 : 3.0;
+                const meanVal = baseVal + (diurnal * scale * Math.min(1.0, h / 24.0));
                 const spread = 1.0 + (h / 720.0) * 3.5;
                 rawMean.push(parseFloat(meanVal.toFixed(1)));
                 rawUpper.push(parseFloat((meanVal + spread).toFixed(1)));
                 rawLower.push(parseFloat((meanVal - spread).toFixed(1)));
             }
         }
+
 
         const forecastMeanPoints = [{ x: lastDate.getTime(), y: parseFloat(baseVal.toFixed(1)) }];
         const forecastUpperPoints = [{ x: lastDate.getTime(), y: parseFloat(baseVal.toFixed(1)) }];
@@ -596,6 +610,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart();
     fetchLiveTelemetry();
 
-    // Start 3-second live auto-update stream
-    autoUpdateInterval = setInterval(fetchLiveTelemetry, 3000);
+    // Start 30-second background auto-update stream
+    autoUpdateInterval = setInterval(fetchLiveTelemetry, 30000);
 });

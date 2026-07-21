@@ -1,0 +1,3 @@
+arXiv API Terms & License Notification
+Timestamp: 2026-07-20T20:48:13+08:00
+Notification: Users must check arXiv API terms of use at https://info.arxiv.org/help/api/index.html and always verify individual paper licenses for any usage restrictions.

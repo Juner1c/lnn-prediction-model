@@ -1,7 +1,10 @@
+import os
 import pandas as pd
-import numpy as np
 
-df = pd.read_csv(r"c:\Users\Jhonric Gorillo\Desktop\JHONRIC_FILES\OJT\LNN-Prediction-Model-Project\data\timeseries_15min_clean.csv")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+csv_path = os.path.join(BASE_DIR, "data", "timeseries_15min_clean.csv")
+df = pd.read_csv(csv_path)
+
 
 # Clean column names
 df.columns = [c.encode('ascii', 'ignore').decode('ascii').strip() for c in df.columns]

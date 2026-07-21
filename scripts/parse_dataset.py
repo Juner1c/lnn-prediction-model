@@ -1,9 +1,11 @@
 import os
 import pandas as pd
 
-raw_path = r"c:\Users\Jhonric Gorillo\Desktop\JHONRIC_FILES\OJT\LNN-Prediction-Model-Project\obsidian-vault\_raw\open-meteo-dataset-for-heatindex-3months.csv"
-output_dir = r"c:\Users\Jhonric Gorillo\Desktop\JHONRIC_FILES\OJT\LNN-Prediction-Model-Project\data"
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+raw_path = os.path.join(BASE_DIR, "obsidian-vault", "_raw", "open-meteo-dataset-for-heatindex-3months.csv")
+output_dir = os.path.join(BASE_DIR, "data")
 os.makedirs(output_dir, exist_ok=True)
+
 
 with open(raw_path, 'r', encoding='utf-8') as f:
     lines = f.readlines()
