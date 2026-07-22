@@ -23,7 +23,8 @@ class TestHotspotEngine(unittest.TestCase):
         self.assertTrue(json_data["success"])
         self.assertIn("primary_hotspot", json_data["data"])
         self.assertIn("all_hotspots", json_data["data"])
-        self.assertEqual(len(json_data["data"]["all_hotspots"]), 7)
+        self.assertGreater(len(json_data["data"]["all_hotspots"]), 0)
+
 
         primary = json_data["data"]["primary_hotspot"]
         self.assertIn("anomalyScore", primary)

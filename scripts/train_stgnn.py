@@ -22,7 +22,7 @@ WEIGHTS_PATH = os.path.join(BASE_DIR, "data", "stgnn_weights.pt")
 
 class KloudtechTelemetryDataset(Dataset):
     """
-    Sliding window dataset generated directly from Kloudtech API weather station telemetry.
+    Sliding window dataset generated directly from live Kloudtech API weather station telemetry.
     Maps 24h input sequence [7, seq_len=96, 5] to multi-variable target forecast [7, horizon=16, 5].
     """
     def __init__(self, telemetry_data: list, num_nodes: int = 7, seq_len: int = 96, horizon: int = 16):
@@ -32,21 +32,31 @@ class KloudtechTelemetryDataset(Dataset):
 
         station_matrices = []
         for idx in range(num_nodes):
-            st_entry = telemetry_data[idx] if idx < len(telemetry_data) else telemetry_data[0]
+            st_entry = telemetry_data[idx] if idx < len(telemetry_data) else (telemetry_data[0] if telemetry_data else {})
+            t_obj = st_entry.get("telemetry") or {}
+            
+            temp_base = float(t_obj.get("temperature") or 31.0)
+            rh_base = float(t_obj.get("humidity") or 65.0)
+            hi_base = float(t_obj.get("heatIndex") or (temp_base + 3.0))
+            wind_obj = t_obj.get("wind") or {}
+            wind_base = float(wind_obj.get("speed") if isinstance(wind_obj, dict) else (t_obj.get("windSpeed") or 3.5))
+            dp_base = float(t_obj.get("dewPoint") or (temp_base - ((100 - rh_base) / 5.0)))
+
+            # Build 24h (96 15-min steps) time sequence around live station metrics
             h = st_entry.get("history_24h", {})
-            temps = h.get("temperature", [31.0] * 96)
-            rhs = h.get("humidity", [65.0] * 96)
-            his = h.get("heatIndex", [35.0] * 96)
+            temps = h.get("temperature", [temp_base] * 96)
+            rhs = h.get("humidity", [rh_base] * 96)
+            his = h.get("heatIndex", [hi_base] * 96)
             dps = [float(round(t - ((100 - r) / 5.0), 2)) for t, r in zip(temps, rhs)]
-            wss = [6.5] * len(temps)
+            wss = [wind_base] * len(temps)
 
             if len(temps) < 96:
                 pad = 96 - len(temps)
-                temps = [temps[0]] * pad + temps
-                rhs = [rhs[0]] * pad + rhs
-                dps = [dps[0]] * pad + dps
-                his = [his[0]] * pad + his
-                wss = [wss[0]] * pad + wss
+                temps = [temp_base] * pad + temps
+                rhs = [rh_base] * pad + rhs
+                dps = [dp_base] * pad + dps
+                his = [hi_base] * pad + his
+                wss = [wind_base] * pad + wss
 
             # [96, 5] matrix
             matrix = np.column_stack([temps[:96], rhs[:96], dps[:96], his[:96], wss[:96]]).astype(np.float32)

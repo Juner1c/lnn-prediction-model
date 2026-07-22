@@ -10,11 +10,9 @@ import logging
 
 logger = logging.getLogger("api.auth")
 
-DEFAULT_API_KEY = os.getenv("KLOUDTRACK_API_KEY")
-if not DEFAULT_API_KEY:
-    DEFAULT_API_KEY = "kloudtrack_secret_key_123"
-    logger.warning("[SECURITY WARN] KLOUDTRACK_API_KEY environment variable not set. Using default development key.")
+from src.api.config import settings
 
+DEFAULT_API_KEY = settings.API_KEY or "kloudtrack_secret_key_123"
 
 def verify_api_key(
     kloudtrack_key: str = Security(KLOUDTRACK_KEY_HEADER),
@@ -27,6 +25,7 @@ def verify_api_key(
             detail="Missing or Invalid API key"
         )
     return key
+
 
 def verify_optional_api_key(
     kloudtrack_key: str = Security(KLOUDTRACK_KEY_HEADER),

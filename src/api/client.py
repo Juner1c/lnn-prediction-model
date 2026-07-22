@@ -1,18 +1,21 @@
 import time
 import requests
+import logging
 from typing import Dict, Any, Optional
 from src.api.config import settings
+
+logger = logging.getLogger("api.client")
 
 class KloudtechProxyClient:
     """
     Backend Proxy & Cache Layer for KloudTrack API.
     Prevents exposing private API keys to client apps and manages rate-limit quotas.
-    Follows recommended flow: Client App -> Client Backend/Cache Layer -> KloudTrack API
+    Routes requests directly to live Kloudtrack API (https://api.kloudtechsea.com/api/v1).
     """
-    def __init__(self, base_url: str = settings.BASE_URL, api_key: str = settings.API_KEY, cache_ttl: int = settings.CACHE_TTL_SECONDS):
-        self.base_url = base_url.rstrip('/')
-        self.api_key = api_key
-        self.cache_ttl = cache_ttl
+    def __init__(self, base_url: str = None, api_key: str = None, cache_ttl: int = None):
+        self.base_url = (base_url or settings.BASE_URL).rstrip('/')
+        self.api_key = api_key or settings.API_KEY
+        self.cache_ttl = cache_ttl or settings.CACHE_TTL_SECONDS
         self._cache: Dict[str, Dict[str, Any]] = {}
 
     def _get_headers(self) -> Dict[str, str]:
@@ -33,90 +36,38 @@ class KloudtechProxyClient:
         # Call remote KloudTrack API
         url = f"{self.base_url}{endpoint}"
         try:
-            resp = requests.get(url, headers=self._get_headers(), params=params, timeout=5)
+            resp = requests.get(url, headers=self._get_headers(), params=params, timeout=10)
             if resp.status_code == 200:
                 data = resp.json()
                 self._cache[cache_key] = {"timestamp": now, "data": data}
                 return data
-        except Exception:
-            pass
+            elif resp.status_code == 429:
+                logger.warning(f"[KLOUDTECH API RATE LIMIT 429] Endpoint {url} rate limited. Attempting cache fallback...")
+                if cache_key in self._cache:
+                    return self._cache[cache_key]["data"]
+                # Try finding any cached entry for endpoint
+                for k, entry in self._cache.items():
+                    if k.startswith(endpoint):
+                        return entry["data"]
+                return {"success": False, "message": "Kloudtech API rate limit exceeded", "error": resp.text}
+            else:
+                logger.error(f"[KLOUDTECH API ERROR] HTTP {resp.status_code} from {url}: {resp.text}")
+                if cache_key in self._cache:
+                    return self._cache[cache_key]["data"]
+                return {"success": False, "message": f"Kloudtech API returned HTTP {resp.status_code}", "error": resp.text}
+        except Exception as err:
+            logger.error(f"[KLOUDTECH API EXCEPTION] Failed to query {url}: {err}")
+            if cache_key in self._cache:
+                return self._cache[cache_key]["data"]
+            return {"success": False, "message": f"Kloudtech API connection exception: {str(err)}", "error": str(err)}
 
-        # Proxy client live fallback data generator for 7 Central Luzon weather stations
-        stations_meta = [
-            {"id": "st_0", "name": "Subic Bay Weather Observatory", "latitude": 14.868190, "longitude": 120.279594, "elevation": 12.0},
-            {"id": "st_1", "name": "Clark Freeport Meteorological Station", "latitude": 15.185950, "longitude": 120.560120, "elevation": 148.0},
-            {"id": "st_2", "name": "Bataan Coastal Station", "latitude": 14.727592, "longitude": 120.306980, "elevation": 8.0},
-            {"id": "st_3", "name": "Pampanga Agromet Center", "latitude": 14.938489, "longitude": 120.727610, "elevation": 6.0},
-            {"id": "st_4", "name": "Cabanatuan Weather Station", "latitude": 15.486210, "longitude": 120.968020, "elevation": 32.0},
-            {"id": "st_5", "name": "Tarlac Central Observatory", "latitude": 15.480200, "longitude": 120.597900, "elevation": 55.0},
-            {"id": "st_6", "name": "Baler Marine Station", "latitude": 15.758800, "longitude": 121.562400, "elevation": 10.0},
-        ]
 
-        import math
-        manila_now = time.strftime("%Y-%m-%dT%H:%M:%S+0800")
-        hour_now = int(time.strftime("%H"))
+    def fetch_station_history(self, station_id: str, take: int = 96) -> Dict[str, Any]:
+        """
+        Fetch historical time-series telemetry for a specific Kloudtech station.
+        """
+        endpoint = f"/telemetry/station/{station_id}/history"
+        return self.fetch_with_cache(endpoint, params={"take": take})
 
-        dashboard_data = []
-        for idx, st in enumerate(stations_meta):
-            diurnal = math.sin(((hour_now - 8) / 24.0) * 2 * math.pi)
-            temp = round(31.0 + idx * 0.4 + diurnal * 2.5, 1)
-            rh = round(max(40.0, min(95.0, 68.0 - idx * 0.8 - diurnal * 5.0)), 1)
-
-            # Simple Heat Index formula
-            hi = round(temp + 0.5555 * ((6.11 * math.exp(5417.7530 * (1/273.16 - 1/(273.15 + temp)))) * (rh/100) - 10), 1)
-            if hi < temp:
-                hi = temp
-
-            hist_temps, hist_rhs, hist_his, hist_ts = [], [], [], []
-            for step in range(96):
-                h_offset = (hour_now - (95 - step) * 0.25) % 24
-                d_step = math.sin(((h_offset - 8) / 24.0) * 2 * math.pi)
-                t_s = round(31.0 + idx * 0.4 + d_step * 2.5, 1)
-                r_s = round(max(40.0, min(95.0, 68.0 - idx * 0.8 - d_step * 5.0)), 1)
-                hi_s = round(t_s + (0.55 * (r_s - 50) * 0.1), 1)
-
-                ts_sec = now - (95 - step) * 15 * 60
-                hist_ts.append(time.strftime("%Y-%m-%dT%H:%M:%S+0800", time.localtime(ts_sec)))
-                hist_temps.append(t_s)
-                hist_rhs.append(r_s)
-                hist_his.append(hi_s)
-
-            entry = {
-                "station": {
-                    "id": st["id"],
-                    "name": st["name"],
-                    "latitude": st["latitude"],
-                    "longitude": st["longitude"],
-                    "elevation": st["elevation"],
-                    "organizationId": "org_default",
-                    "isActive": True,
-                    "status": "active",
-                    "source": "Kloudtech API"
-                },
-                "latest": {
-                    "id": 98765 + idx,
-                    "recordedAt": manila_now,
-                    "createdAt": manila_now,
-                    "temperature": temp,
-                    "humidity": rh,
-                    "dewPoint": round(temp - ((100 - rh) / 5), 1),
-                    "apparentTemperature": round(temp + 1.2, 1),
-                    "heatIndex": hi,
-                    "windSpeed": 6.5,
-                    "windDirection": 180.0,
-                    "pressure": 1012.0
-                },
-                "history_24h": {
-                    "timestamps": hist_ts,
-                    "temperature": hist_temps,
-                    "humidity": hist_rhs,
-                    "heatIndex": hist_his
-                }
-            }
-            dashboard_data.append(entry)
-
-        proxy_resp = {"success": True, "message": "Kloudtech Telemetry Proxy data retrieved", "data": dashboard_data}
-        self._cache[cache_key] = {"timestamp": now, "data": proxy_resp}
-        return proxy_resp
 
 proxy_client = KloudtechProxyClient()

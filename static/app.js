@@ -1,4 +1,16 @@
+// Patch Canvas2D getContext for high-performance Leaflet heatmap readbacks
+if (typeof HTMLCanvasElement !== "undefined") {
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(type, attributes) {
+        if (type === "2d") {
+            attributes = Object.assign({ willReadFrequently: true }, attributes);
+        }
+        return originalGetContext.call(this, type, attributes);
+    };
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+
     let map = null;
     let heatLayer = null;
     let isHeatmapVisible = true;
@@ -6,20 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
     let markersMap = {};
     let stationData = [];
     let stationForecasts = {}; // stationId -> forecast payload
-    let activeStationId = "st_0";
+    let activeStationId = null;
     let currentMetric = "heatIndex"; // "heatIndex" | "temperature" | "humidity"
     let autoUpdateInterval = null;
 
-    // Central Luzon 7 Weather Stations Metadata
-    const CENTRAL_LUZON_STATIONS_METADATA = [
-        { id: "st_0", name: "Subic Bay Weather Observatory", lat: 14.868190, lon: 120.279594 },
-        { id: "st_1", name: "Clark Freeport Meteorological Station", lat: 15.185950, lon: 120.560120 },
-        { id: "st_2", name: "Bataan Coastal Station", lat: 14.727592, lon: 120.306980 },
-        { id: "st_3", name: "Pampanga Agromet Center", lat: 14.938489, lon: 120.727610 },
-        { id: "st_4", name: "Cabanatuan Weather Station", lat: 15.486210, lon: 120.968020 },
-        { id: "st_5", name: "Tarlac Central Observatory", lat: 15.480200, lon: 120.597900 },
-        { id: "st_6", name: "Baler Marine Station", lat: 15.758800, lon: 121.562400 },
-    ];
 
     // Initialize Leaflet Map centered on Central Luzon
     function initMap() {
@@ -133,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 throw new Error(`API network error ${resp.status}`);
             }
             const res = await resp.json();
-            if (res.success && res.data) {
+            if (res.success && res.data && res.data.length > 0) {
                 updateApiStatusBadge(true, "Kloudtech API: CONNECTED");
                 stationData = res.data.map(item => {
                     const st = item.station;
@@ -146,23 +148,24 @@ document.addEventListener("DOMContentLoaded", () => {
                         telemetry: { temperature: t, humidity: rh, heatIndex: hi }
                     };
                 });
+
+                // Ensure activeStationId matches one of the real stations returned by Kloudtech API
+                const exists = stationData.some(item => item.station && item.station.id === activeStationId);
+                if (!exists && stationData.length > 0) {
+                    activeStationId = stationData[0].station.id;
+                }
             }
         } catch (e) {
             updateApiStatusBadge(false, "Kloudtech API: DISCONNECTED");
-            stationData = CENTRAL_LUZON_STATIONS_METADATA.map(st => {
-                const t = 31.0;
-                const rh = 65.0;
-                const hi = calculateHeatIndexLocal(t, rh);
-                return {
-                    station: { id: st.id, name: st.name, latitude: st.lat, longitude: st.lon, isActive: false, status: "offline", source: "Kloudtech API (Offline)" },
-                    telemetry: { temperature: t, humidity: rh, heatIndex: hi }
-                };
-            });
+            stationData = [];
         }
 
-        await fetchStationForecast(activeStationId);
+        if (activeStationId) {
+            await fetchStationForecast(activeStationId);
+        }
         updateUIComponents();
     }
+
 
     // Fetch station forecast from backend endpoint
     async function fetchStationForecast(stId) {
