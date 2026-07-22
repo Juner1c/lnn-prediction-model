@@ -43,6 +43,9 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **Constraint**: Never serve predictions from a model that has not been trained (i.e., uses random/initialized weights). If a model is in development and untrained: (1) Label outputs explicitly as "synthetic/demo" in API responses and UI. (2) Do not claim the output is from the model — attribute it honestly. (3) The model input must be real data, not `torch.randn()`.
 - **Rationale**: Serving untrained model outputs as "AI predictions" is scientifically dishonest and misleads stakeholders about the system's actual capabilities.
 
+### Frontend Dashboard Fetch Resilience Rule
+- **Clean Same-Origin Requests**: Frontend dashboard scripts (`static/app.js`) must invoke same-origin telemetry endpoints via clean `fetch('/telemetry/dashboard')` without referencing uninitialized or hardcoded `HEADERS` objects, ensuring client UI components never throw `ReferenceError` crashes during telemetry data rendering.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
