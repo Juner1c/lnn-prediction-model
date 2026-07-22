@@ -175,11 +175,14 @@ document.addEventListener("DOMContentLoaded", () => {
     // Render Station Cards efficiently without DOM thrashing
     function renderStationCards() {
         const container = document.getElementById("station-list");
+        if (!container) return;
 
         stationData.forEach(item => {
             const st = item.station;
             const tel = item.telemetry;
             let card = container.querySelector(`[data-station-id="${st.id}"]`);
+            const isOnline = st.isActive !== false;
+            const sourceTag = st.source || 'Kloudtech API';
 
             if (!card) {
                 card = document.createElement("div");
@@ -187,7 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 card.setAttribute("data-station-id", st.id);
                 card.setAttribute("tabindex", "0");
                 card.innerHTML = `
-                    <div class="station-card-title">${st.name}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <div class="station-card-title">${st.name}</div>
+                        <span class="st-badge" style="font-size:10px; font-weight:600; padding:2px 6px; border-radius:4px; background:${isOnline ? 'rgba(46,204,113,0.18)' : 'rgba(255,159,10,0.18)'}; color:${isOnline ? '#2ecc71' : '#ff9f0a'}; border:1px solid ${isOnline ? 'rgba(46,204,113,0.4)' : 'rgba(255,159,10,0.4)'};">${sourceTag}</span>
+                    </div>
                     <div class="station-card-metric">
                         <span class="st-temp">Temp: ${tel.temperature.toFixed(1)}°C</span>
                         <span class="st-rh">RH: ${tel.humidity.toFixed(1)}%</span>
@@ -214,9 +220,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 const tempEl = card.querySelector(".st-temp");
                 const rhEl = card.querySelector(".st-rh");
                 const hiEl = card.querySelector(".st-hi");
+                const badgeEl = card.querySelector(".st-badge");
                 if (tempEl) tempEl.textContent = `Temp: ${tel.temperature.toFixed(1)}°C`;
                 if (rhEl) rhEl.textContent = `RH: ${tel.humidity.toFixed(1)}%`;
                 if (hiEl) hiEl.textContent = `${tel.heatIndex.toFixed(1)}°C`;
+                if (badgeEl) {
+                    badgeEl.textContent = sourceTag;
+                    badgeEl.style.background = isOnline ? 'rgba(46,204,113,0.18)' : 'rgba(255,159,10,0.18)';
+                    badgeEl.style.color = isOnline ? '#2ecc71' : '#ff9f0a';
+                }
             }
         });
     }
