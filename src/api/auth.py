@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from fastapi import Security, HTTPException, status
 from fastapi.security.api_key import APIKeyHeader
 
@@ -26,3 +27,9 @@ def verify_api_key(
             detail="Missing or Invalid API key"
         )
     return key
+
+def verify_optional_api_key(
+    kloudtrack_key: str = Security(KLOUDTRACK_KEY_HEADER),
+    fallback_key: str = Security(API_KEY_HEADER_FALLBACK)
+) -> Optional[str]:
+    return kloudtrack_key or fallback_key

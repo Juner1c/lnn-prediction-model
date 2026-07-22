@@ -12,8 +12,9 @@ class TestKloudtechAPI(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["status"], "healthy")
 
-    def test_dashboard_unauthorized(self):
-        response = self.client.get("/telemetry/dashboard")
+    def test_calculate_unauthorized(self):
+        payload = {"temperature": 32.0, "humidity": 70.0}
+        response = self.client.post("/api/v1/heat-index/calculate", json=payload)
         self.assertEqual(response.status_code, 401)
         self.assertIn("Missing or Invalid API key", response.json()["detail"])
 

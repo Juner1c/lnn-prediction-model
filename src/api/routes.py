@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
-from src.api.auth import verify_api_key
+from src.api.auth import verify_api_key, verify_optional_api_key
 from src.api.schemas import (
     KloudtrackResponse,
     StationInfo,
@@ -162,7 +162,7 @@ def get_risk_level(hi: float) -> str:
 
 # 1. GET /telemetry/dashboard
 @router.get("/telemetry/dashboard", response_model=KloudtrackResponse[List[WeatherStationDashboardEntry]])
-def get_dashboard(api_key: str = Depends(verify_api_key)):
+def get_dashboard(api_key: Optional[str] = Depends(verify_optional_api_key)):
     readings = load_real_openmeteo_telemetry()
     entries = []
     for station in CENTRAL_LUZON_STATIONS:
@@ -175,7 +175,7 @@ def get_dashboard(api_key: str = Depends(verify_api_key)):
 @router.get("/telemetry/station/{stationId}/forecast", response_model=KloudtrackResponse[dict])
 def get_station_forecast(
     stationId: str = Path(..., description="Station hashid e.g. st_0"),
-    api_key: str = Depends(verify_api_key)
+    api_key: Optional[str] = Depends(verify_optional_api_key)
 ):
     station = next((s for s in CENTRAL_LUZON_STATIONS if s.id == stationId or s.id == f"st_{stationId}"), None)
     if not station:
@@ -286,7 +286,7 @@ def get_station_forecast(
 @router.get("/telemetry/station/{stationId}/current", response_model=KloudtrackResponse[dict])
 def get_station_current(
     stationId: str = Path(..., description="Station hashid e.g. st_0"),
-    api_key: str = Depends(verify_api_key)
+    api_key: Optional[str] = Depends(verify_optional_api_key)
 ):
     station = next((s for s in CENTRAL_LUZON_STATIONS if s.id == stationId or s.id == f"st_{stationId}"), None)
     if not station:
@@ -300,7 +300,7 @@ def get_station_current(
 @router.get("/telemetry/record/{id}", response_model=KloudtrackResponse[dict])
 def get_telemetry_by_id(
     id: int = Path(..., description="Numeric telemetry record ID"),
-    api_key: str = Depends(verify_api_key)
+    api_key: Optional[str] = Depends(verify_optional_api_key)
 ):
     readings = load_real_openmeteo_telemetry()
     for st_id, data in readings.items():
@@ -317,7 +317,7 @@ def get_variable_history(
     variable: str = Path(...),
     skip: int = Query(0),
     take: int = Query(10),
-    api_key: str = Depends(verify_api_key)
+    api_key: Optional[str] = Depends(verify_optional_api_key)
 ):
     valid_variables = ["temperature", "humidity", "pressure", "heatIndex", "windSpeed", "windDirection", "precipitation", "uvIndex", "distance", "lightIntensity"]
     if variable not in valid_variables:
@@ -347,7 +347,7 @@ def calculate_hi(payload: HeatIndexCalculationRequest, api_key: str = Depends(ve
 
 # 7. GET /telemetry/hotspots/detect
 @router.get("/telemetry/hotspots/detect", response_model=KloudtrackResponse[dict])
-def detect_thermal_hotspots(api_key: str = Depends(verify_api_key)):
+def detect_thermal_hotspots(api_key: Optional[str] = Depends(verify_optional_api_key)):
     """
     Detect spatial thermal hotspots and anomalies across Central Luzon weather stations.
     Leverages Liquid Neural Network continuous-time latent state variance for spatial anomaly scoring
