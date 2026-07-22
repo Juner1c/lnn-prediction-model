@@ -26,13 +26,13 @@ router = APIRouter()
 
 # 7 Central Luzon Automated Weather Stations Metadata
 CENTRAL_LUZON_STATIONS = [
-    StationInfo(id="st_0", name="Coastal Station 0", latitude=15.711775, longitude=121.55514, elevation=6.0),
-    StationInfo(id="st_1", name="Subic Station 1", latitude=14.868190, longitude=120.279594, elevation=6.0),
-    StationInfo(id="st_2", name="Bataan Station 2", latitude=14.727592, longitude=120.306980, elevation=6.0),
-    StationInfo(id="st_3", name="Pampanga Station 3", latitude=14.938489, longitude=120.727610, elevation=5.0),
-    StationInfo(id="st_4", name="Nueva Ecija Station 4", latitude=15.641477, longitude=121.101700, elevation=70.0),
-    StationInfo(id="st_5", name="Central Plain Station 5", latitude=15.571177, longitude=121.072430, elevation=72.0),
-    StationInfo(id="st_6", name="San Fernando Station 6", latitude=15.008787, longitude=120.672270, elevation=8.0),
+    StationInfo(id="st_0", name="Subic Bay Weather Observatory", latitude=14.868190, longitude=120.279594, elevation=12.0),
+    StationInfo(id="st_1", name="Clark Freeport Meteorological Station", latitude=15.185950, longitude=120.560120, elevation=148.0),
+    StationInfo(id="st_2", name="Bataan Coastal Station", latitude=14.727592, longitude=120.306980, elevation=8.0),
+    StationInfo(id="st_3", name="Pampanga Agromet Center", latitude=14.938489, longitude=120.727610, elevation=6.0),
+    StationInfo(id="st_4", name="Cabanatuan Weather Station", latitude=15.486210, longitude=120.968020, elevation=32.0),
+    StationInfo(id="st_5", name="Tarlac Central Observatory", latitude=15.480200, longitude=120.597900, elevation=55.0),
+    StationInfo(id="st_6", name="Baler Marine Station", latitude=15.758800, longitude=121.562400, elevation=10.0),
 ]
 
 # Helper to load real Open-Meteo dataset

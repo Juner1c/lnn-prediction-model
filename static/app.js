@@ -12,13 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Central Luzon 7 Weather Stations Metadata
     const CENTRAL_LUZON_STATIONS_METADATA = [
-        { id: "st_0", name: "Coastal Station 0", lat: 15.711775, lon: 121.55514 },
-        { id: "st_1", name: "Subic Station 1", lat: 14.86819, lon: 120.279594 },
-        { id: "st_2", name: "Bataan Station 2", lat: 14.727592, lon: 120.30698 },
-        { id: "st_3", name: "Pampanga Station 3", lat: 14.938489, lon: 120.72761 },
-        { id: "st_4", name: "Nueva Ecija Station 4", lat: 15.641477, lon: 121.1017 },
-        { id: "st_5", name: "Central Plain Station 5", lat: 15.571177, lon: 121.07243 },
-        { id: "st_6", name: "San Fernando Station 6", lat: 15.008787, lon: 120.67227 },
+        { id: "st_0", name: "Subic Bay Weather Observatory", lat: 14.868190, lon: 120.279594 },
+        { id: "st_1", name: "Clark Freeport Meteorological Station", lat: 15.185950, lon: 120.560120 },
+        { id: "st_2", name: "Bataan Coastal Station", lat: 14.727592, lon: 120.306980 },
+        { id: "st_3", name: "Pampanga Agromet Center", lat: 14.938489, lon: 120.727610 },
+        { id: "st_4", name: "Cabanatuan Weather Station", lat: 15.486210, lon: 120.968020 },
+        { id: "st_5", name: "Tarlac Central Observatory", lat: 15.480200, lon: 120.597900 },
+        { id: "st_6", name: "Baler Marine Station", lat: 15.758800, lon: 121.562400 },
     ];
 
     // Initialize Leaflet Map centered on Central Luzon
