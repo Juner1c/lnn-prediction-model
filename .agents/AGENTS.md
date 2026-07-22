@@ -46,6 +46,11 @@ This document defines the core rules, workflows, and constraints for the AI agen
 ### Frontend Dashboard Fetch Resilience Rule
 - **Clean Same-Origin Requests**: Frontend dashboard scripts (`static/app.js`) must invoke same-origin telemetry endpoints via clean `fetch('/telemetry/dashboard')` without referencing uninitialized or hardcoded `HEADERS` objects, ensuring client UI components never throw `ReferenceError` crashes during telemetry data rendering.
 
+### Kloudtech API Exclusive Telemetry Ingestion Rule
+- **Constraint**: Telemetry endpoints (`/telemetry/dashboard`, `/telemetry/station/{id}/current`) MUST ingest weather telemetry exclusively via the `KloudtechProxyClient` (`https://api.kloudtechsea.com/api/v1`).
+- **No Local CSV Fallbacks**: Do NOT fall back to reading local CSV files (`data/timeseries_15min_clean.csv`) or querying external third-party APIs (such as Open-Meteo).
+- **Service Resilience**: If Kloudtech API connectivity is unavailable or unconfigured, endpoints must return explicit 503 HTTP status errors, and frontend components must render clear connection status indicators (`Kloudtech API: DISCONNECTED`).
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
