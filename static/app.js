@@ -103,13 +103,38 @@ document.addEventListener("DOMContentLoaded", () => {
         return { name: "Danger", class: "risk-danger" };
     }
 
+    function updateApiStatusBadge(isConnected, msg) {
+        const badge = document.getElementById("api-status-badge");
+        const dot = document.getElementById("api-status-dot");
+        const text = document.getElementById("api-status-text");
+        if (!badge || !dot || !text) return;
+
+        if (isConnected) {
+            badge.style.background = "rgba(46, 204, 113, 0.18)";
+            badge.style.color = "#2ecc71";
+            badge.style.borderColor = "rgba(46, 204, 113, 0.4)";
+            dot.style.background = "#2ecc71";
+            text.textContent = msg || "Kloudtech API: CONNECTED";
+        } else {
+            badge.style.background = "rgba(255, 69, 0, 0.18)";
+            badge.style.color = "#FF4500";
+            badge.style.borderColor = "rgba(255, 69, 0, 0.4)";
+            dot.style.background = "#FF4500";
+            text.textContent = msg || "Kloudtech API: DISCONNECTED";
+        }
+    }
+
     // Fetch live telemetry & station forecasts
     async function fetchLiveTelemetry() {
         try {
             const resp = await fetch("/telemetry/dashboard");
-            if (!resp.ok) throw new Error("API network error");
+            if (!resp.ok) {
+                updateApiStatusBadge(false, `Kloudtech API: ERROR (${resp.status})`);
+                throw new Error(`API network error ${resp.status}`);
+            }
             const res = await resp.json();
             if (res.success && res.data) {
+                updateApiStatusBadge(true, "Kloudtech API: CONNECTED");
                 stationData = res.data.map(item => {
                     const st = item.station;
                     const tel = item.telemetry || {};
@@ -123,12 +148,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
         } catch (e) {
+            updateApiStatusBadge(false, "Kloudtech API: DISCONNECTED");
             stationData = CENTRAL_LUZON_STATIONS_METADATA.map(st => {
                 const t = 31.0;
                 const rh = 65.0;
                 const hi = calculateHeatIndexLocal(t, rh);
                 return {
-                    station: { id: st.id, name: st.name, latitude: st.lat, longitude: st.lon },
+                    station: { id: st.id, name: st.name, latitude: st.lat, longitude: st.lon, isActive: false, status: "offline", source: "Kloudtech API (Offline)" },
                     telemetry: { temperature: t, humidity: rh, heatIndex: hi }
                 };
             });

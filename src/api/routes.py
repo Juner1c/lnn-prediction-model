@@ -113,81 +113,34 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
 
     station_readings = {}
 
-    # Attempt to query live Kloudtech Telemetry API via proxy_client if API key configured
-    if proxy_client.api_key:
-        try:
-            remote_resp = proxy_client.fetch_with_cache("/telemetry/dashboard")
-            if remote_resp and remote_resp.get("success") and isinstance(remote_resp.get("data"), list):
-                for entry in remote_resp["data"]:
-                    if "station" in entry and "latest" in entry:
-                        st_id = entry["station"].get("id")
-                        if st_id:
-                            # Mark station as active Kloudtech online station
-                            if isinstance(entry["station"], dict):
-                                entry["station"]["isActive"] = True
-                                entry["station"]["status"] = "active"
-                                entry["station"]["source"] = "Kloudtech API"
-                            elif hasattr(entry["station"], "isActive"):
-                                entry["station"].isActive = True
-                                entry["station"].status = "active"
-                                entry["station"].source = "Kloudtech API"
-                            station_readings[st_id] = entry
-        except Exception:
-            pass
+    # Query live Kloudtech Telemetry API via proxy_client
+    try:
+        remote_resp = proxy_client.fetch_with_cache("/telemetry/dashboard")
+        if remote_resp and remote_resp.get("success") and isinstance(remote_resp.get("data"), list):
+            for entry in remote_resp["data"]:
+                if "station" in entry and "latest" in entry:
+                    st_dict = entry["station"] if isinstance(entry["station"], dict) else entry["station"].model_dump()
+                    st_id = st_dict.get("id")
+                    if st_id:
+                        st_dict["isActive"] = True
+                        st_dict["status"] = "active"
+                        st_dict["source"] = "Kloudtech API"
+                        
+                        latest_dict = entry["latest"] if isinstance(entry["latest"], dict) else entry["latest"].model_dump()
+                        
+                        station_readings[st_id] = {
+                            "station": StationInfo(**st_dict),
+                            "latest": WeatherStationApiReading(**latest_dict),
+                            "history_24h": entry.get("history_24h", {})
+                        }
+    except Exception:
+        pass
 
     
-    if not station_readings and os.path.exists(CSV_PATH):
-        try:
-            now_utc = pd.Timestamp.now(tz="UTC")
-            df = pd.read_csv(CSV_PATH)
-            df["dt_utc"] = pd.to_datetime(df["time"], utc=True)
-
-            for idx, station in enumerate(CENTRAL_LUZON_STATIONS):
-                st_full = df[df["location_id"] == idx]
-                valid_df = st_full[st_full["dt_utc"] <= now_utc]
-                st_df = (valid_df.tail(96) if not valid_df.empty else st_full.tail(96)).copy()
-                if not st_df.empty:
-                    latest = st_df.iloc[-1]
-                    t = float(latest["temperature_2m (°C)"])
-                    rh = float(latest["relative_humidity_2m (%)"])
-                    dp = float(latest["dew_point_2m (°C)"])
-                    at = float(latest["apparent_temperature (°C)"])
-                    ws = float(latest["wind_speed_10m (km/h)"])
-                    hi = calculate_heat_index(t, rh)
-
-                    # Align 96 15-minute timestamps so that the 96th point ends at current local Manila time
-                    now_pht = pd.Timestamp.now(tz="Asia/Manila")
-                    timestamps_pht = [(now_pht - pd.Timedelta(minutes=15 * (95 - i))).strftime("%Y-%m-%dT%H:%M:%S%z") for i in range(len(st_df))]
-
-                    # Extract 24h history sequence (96 steps)
-                    t_hist = [round(float(v), 1) for v in st_df["temperature_2m (°C)"].values]
-                    rh_hist = [round(float(v), 1) for v in st_df["relative_humidity_2m (%)"].values]
-                    hi_hist = [round(calculate_heat_index(temp, rh_val), 1) for temp, rh_val in zip(t_hist, rh_hist)]
-
-                    record_id = 98765 if idx == 0 else 98770 + idx
-                    latest_ts = timestamps_pht[-1]
-
-
-                    station_readings[station.id] = {
-                        "latest": WeatherStationApiReading(
-                            id=record_id, recordedAt=latest_ts, createdAt=latest_ts,
-                            temperature=t, humidity=rh, dewPoint=dp, apparentTemperature=at, heatIndex=hi,
-                            windSpeed=ws, windDirection=180.0, pressure=1012.0
-                        ),
-                        "history_24h": {
-                            "timestamps": timestamps_pht,
-                            "temperature": t_hist,
-                            "humidity": rh_hist,
-                            "heatIndex": hi_hist
-                        }
-                    }
-        except Exception:
-            pass
-
     if not station_readings:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Live weather telemetry data stream and local dataset storage unavailable"
+            detail="Kloudtech Telemetry API connection unavailable"
         )
 
     _telemetry_cache = station_readings
