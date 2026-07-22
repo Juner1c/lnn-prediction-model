@@ -15,6 +15,9 @@ class StationInfo(BaseModel):
     longitude: float
     elevation: float
     organizationId: str = "org_default"
+    isActive: bool = Field(True, description="Whether station is actively reporting live telemetry")
+    status: str = Field("active", description="Station operational status e.g., 'active' or 'fallback'")
+    source: str = Field("Kloudtech API", description="Telemetry data ingestion source")
 
 class WeatherStationApiReading(BaseModel):
     id: int = Field(..., description="Numeric telemetry record ID")

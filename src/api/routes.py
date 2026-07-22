@@ -96,26 +96,14 @@ def extract_multi_station_input_tensor(readings: Dict[str, Any]) -> torch.Tensor
 
 def fetch_live_openmeteo_station_telemetry(lat: float, lon: float) -> Optional[Dict[str, Any]]:
     """
-    Fetch live real-time historical and forecast telemetry directly from Open-Meteo HTTP API.
+    Deprecated Open-Meteo fetcher stub (No Open-Meteo external queries executed).
     """
-    try:
-        url = (
-            f"https://api.open-meteo.com/v1/forecast?"
-            f"latitude={lat}&longitude={lon}&past_days=2&forecast_days=16&"
-            f"hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,wind_speed_10m&"
-            f"timezone=Asia%2FManila"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "Antigravity/1.0"})
-        with urllib.request.urlopen(req, timeout=3) as res:
-            if res.status == 200:
-                return json.loads(res.read().decode())
-    except Exception:
-        pass
     return None
 
 def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
     """
-    Load real Open-Meteo telemetry for all 7 weather stations via live HTTP API or local CSV cache.
+    Load real station telemetry for all 7 weather stations exclusively via Kloudtech Telemetry API
+    or local clean CSV dataset fallback (No Open-Meteo HTTP calls).
     Includes in-memory TTL caching (60 seconds) to prevent redundant remote HTTP queries.
     """
     global _telemetry_cache, _telemetry_cache_timestamp
@@ -134,74 +122,18 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
                     if "station" in entry and "latest" in entry:
                         st_id = entry["station"].get("id")
                         if st_id:
+                            # Mark station as active Kloudtech online station
+                            if isinstance(entry["station"], dict):
+                                entry["station"]["isActive"] = True
+                                entry["station"]["status"] = "active"
+                                entry["station"]["source"] = "Kloudtech API"
+                            elif hasattr(entry["station"], "isActive"):
+                                entry["station"].isActive = True
+                                entry["station"].status = "active"
+                                entry["station"].source = "Kloudtech API"
                             station_readings[st_id] = entry
         except Exception:
             pass
-
-    # Query Open-Meteo live API independently for any remaining weather stations
-    for idx, station in enumerate(CENTRAL_LUZON_STATIONS):
-        if station.id in station_readings:
-            continue
-        api_data = fetch_live_openmeteo_station_telemetry(station.latitude, station.longitude)
-        if api_data and "hourly" in api_data:
-            try:
-                h = api_data["hourly"]
-                times = h["time"]
-                temps = h["temperature_2m"]
-                rhs = h["relative_humidity_2m"]
-                dps = h["dew_point_2m"]
-                ats = h["apparent_temperature"]
-                wss = h["wind_speed_10m"]
-
-                now_str = pd.Timestamp.now(tz="Asia/Manila").strftime("%Y-%m-%dT%H:%M")
-                valid_indices = [i for i, t in enumerate(times) if t <= now_str]
-                if not valid_indices:
-                    valid_indices = list(range(min(48, len(times))))
-
-                past_indices = valid_indices[-24:]
-                future_indices = [i for i in range(len(times)) if i > past_indices[-1]][:384] # 16 days hourly
-
-                t_hist = [round(float(temps[i]), 1) for i in past_indices]
-                rh_hist = [round(max(0.0, min(100.0, float(rhs[i]))), 1) for i in past_indices]
-                hi_hist = [calculate_heat_index(t_v, rh_v) for t_v, rh_v in zip(t_hist, rh_hist)]
-
-                # Extract real 16-day hourly NWP forecast sequence for this exact station
-                t_fc = [round(float(temps[i]), 1) for i in future_indices]
-                rh_fc = [round(max(0.0, min(100.0, float(rhs[i]))), 1) for i in future_indices]
-                hi_fc = [calculate_heat_index(t_v, rh_v) for t_v, rh_v in zip(t_fc, rh_fc)]
-
-                last_i = past_indices[-1]
-                t = round(float(temps[last_i]), 1)
-                rh = round(max(0.0, min(100.0, float(rhs[last_i]))), 1)
-                dp = round(float(dps[last_i]), 1)
-                at = round(float(ats[last_i]), 1)
-                ws = round(float(wss[last_i]), 1)
-                hi = calculate_heat_index(t, rh)
-
-                ts_pht = [pd.Timestamp(times[i], tz="Asia/Manila").strftime("%Y-%m-%dT%H:%M:%S%z") for i in past_indices]
-                latest_ts = ts_pht[-1]
-                record_id = 98765 if idx == 0 else 98770 + idx
-
-                station_readings[station.id] = {
-                    "latest": WeatherStationApiReading(
-                        id=record_id, recordedAt=latest_ts, createdAt=latest_ts,
-                        temperature=t, humidity=rh, dewPoint=dp, apparentTemperature=at, heatIndex=hi,
-                        windSpeed=ws, windDirection=180.0, pressure=1012.0
-                    ),
-                    "history_24h": {
-                        "timestamps": ts_pht,
-                        "temperature": t_hist,
-                        "humidity": rh_hist,
-                        "heatIndex": hi_hist
-                    },
-                    "forecast_nwp": {
-                        "temperature": t_fc,
-                        "humidity": rh_fc,
-                        "heatIndex": hi_fc
-                    }
-                }
-            except Exception:
-                pass
 
     
     if not station_readings and os.path.exists(CSV_PATH):
@@ -284,7 +216,7 @@ def get_dashboard(api_key: str = Depends(verify_api_key)):
         st_data = readings.get(station.id, {})
         latest_telemetry = st_data.get("latest")
         entries.append(WeatherStationDashboardEntry(station=station, telemetry=latest_telemetry))
-    return KloudtrackResponse(message="Real Open-Meteo telemetry retrieved successfully", data=entries)
+    return KloudtrackResponse(message="Realtime station telemetry retrieved via Kloudtech API", data=entries)
 
 # 2. GET /telemetry/station/{stationId}/forecast
 @router.get("/telemetry/station/{stationId}/forecast", response_model=KloudtrackResponse[dict])

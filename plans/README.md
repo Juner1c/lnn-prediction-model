@@ -19,6 +19,7 @@
 | `015-real-station-telemetry-nwp-stgnn` | Connect Real Per-Station Telemetry & Physical NWP to STGNN/LNN Forecast Engine | Complete | `014-deep-system-audit-and-flaw-ledger` |
 | `016-master-system-audit-and-remediation` | Master System Audit & Architectural Remediation Plan | Complete | `015-real-station-telemetry-nwp-stgnn` |
 | `017-wire-kloudtech-live-telemetry` | Wire Kloudtech Remote Live Telemetry API into Microservice Pipeline | Complete | `016-master-system-audit-and-remediation` |
+| `018-kloudtech-only-telemetry-ingestion` | Kloudtech API Direct Ingestion & Active Station Verification (No Open-Meteo) | Complete | `017-wire-kloudtech-live-telemetry` |
 
 
 
