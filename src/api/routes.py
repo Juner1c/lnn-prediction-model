@@ -20,6 +20,7 @@ from src.api.schemas import (
 from src.data.heat_index import calculate_heat_index, calculate_lu_romps_physiological_margin
 from src.models.spatial_graph import build_spatial_adjacency_matrix
 from src.models.stgnn_forecaster import SpatialTemporalGNN
+from src.api.client import proxy_client
 
 router = APIRouter()
 
@@ -124,8 +125,23 @@ def load_real_openmeteo_telemetry() -> Dict[str, Dict[str, Any]]:
 
     station_readings = {}
 
-    # Query Open-Meteo live API independently for all 7 weather stations
+    # Attempt to query live Kloudtech Telemetry API via proxy_client if API key configured
+    if proxy_client.api_key:
+        try:
+            remote_resp = proxy_client.fetch_with_cache("/telemetry/dashboard")
+            if remote_resp and remote_resp.get("success") and isinstance(remote_resp.get("data"), list):
+                for entry in remote_resp["data"]:
+                    if "station" in entry and "latest" in entry:
+                        st_id = entry["station"].get("id")
+                        if st_id:
+                            station_readings[st_id] = entry
+        except Exception:
+            pass
+
+    # Query Open-Meteo live API independently for any remaining weather stations
     for idx, station in enumerate(CENTRAL_LUZON_STATIONS):
+        if station.id in station_readings:
+            continue
         api_data = fetch_live_openmeteo_station_telemetry(station.latitude, station.longitude)
         if api_data and "hourly" in api_data:
             try:
