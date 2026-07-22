@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         pointRadius: 2
                     },
                     {
-                        label: '30-Day Mean Forecast (°C)',
+                        label: '16-Day NWP/STGNN Forecast (°C)',
                         data: [],
                         borderColor: '#FF9F0A',
                         backgroundColor: 'transparent',
@@ -483,15 +483,15 @@ document.addEventListener("DOMContentLoaded", () => {
             historyPoints.push({ x: d.getTime(), y: rawHistory[i] });
         }
 
-        // Extract 720 forecast hourly mean, upper, lower bounds for 30 Days (1 Month)
+        // Extract 384 forecast hourly mean, upper, lower bounds for 16-Day (384h) NWP/STGNN Horizon
         let rawMean = [];
         let rawUpper = [];
         let rawLower = [];
 
-        const metricFc = (fc && fc.forecast_30day && fc.forecast_30day[currentMetric])
-            ? fc.forecast_30day[currentMetric]
-            : ((fc && fc.forecast_16day && fc.forecast_16day[currentMetric])
-                ? fc.forecast_16day[currentMetric]
+        const metricFc = (fc && fc.forecast_16day && fc.forecast_16day[currentMetric])
+            ? fc.forecast_16day[currentMetric]
+            : ((fc && fc.forecast_30day && fc.forecast_30day[currentMetric])
+                ? fc.forecast_30day[currentMetric]
                 : ((fc && fc.forecast_16step && fc.forecast_16step[currentMetric]) ? fc.forecast_16step[currentMetric] : null));
 
         if (metricFc && metricFc.mean && metricFc.mean.length) {
@@ -499,13 +499,13 @@ document.addEventListener("DOMContentLoaded", () => {
             rawUpper = metricFc.upper.map((v, i) => parseFloat((v || rawMean[i] + 1.2).toFixed(1)));
             rawLower = metricFc.lower.map((v, i) => parseFloat((v || rawMean[i] - 1.2).toFixed(1)));
         } else {
-            // Realistic diurnal continuation spanning 30 Days (1 Month) if API response is pending/cached
-            for (let h = 1; h <= 720; h++) {
+            // Realistic diurnal continuation spanning 16 Days if API response is pending/cached
+            for (let h = 1; h <= 384; h++) {
                 const hourLocal = (lastDate.getHours() + h) % 24;
                 const diurnal = Math.sin(((hourLocal - 8) / 24.0) * 2 * Math.PI);
                 const scale = (currentMetric === 'humidity') ? -6.0 : 3.0;
                 const meanVal = baseVal + (diurnal * scale * Math.min(1.0, h / 24.0));
-                const spread = 1.0 + (h / 720.0) * 3.5;
+                const spread = 1.0 + (h / 384.0) * 3.5;
                 rawMean.push(parseFloat(meanVal.toFixed(1)));
                 rawUpper.push(parseFloat((meanVal + spread).toFixed(1)));
                 rawLower.push(parseFloat((meanVal - spread).toFixed(1)));

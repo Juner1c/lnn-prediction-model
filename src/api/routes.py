@@ -305,7 +305,7 @@ def get_station_forecast(
     real_input = extract_multi_station_input_tensor(readings).unsqueeze(0) # [1, 7, 96, 5]
 
     with torch.no_grad():
-        rollout_tensor = model.predict_autoregressive_rollout(real_input, adj, steps=720) # [1, 7, 720]
+        rollout_tensor = model.predict_autoregressive_rollout(real_input, adj, steps=384) # [1, 7, 384]
 
     st_idx = int(station.id.split("_")[-1]) if "_" in station.id else 0
     raw_rollout = rollout_tensor[0, st_idx].numpy().tolist()
@@ -320,14 +320,14 @@ def get_station_forecast(
     nwp_temp = nwp_fc.get("temperature", [])
     nwp_rh = nwp_fc.get("humidity", [])
 
-    # Generate 1-Month (30 Days = 720 hours) hourly forecast sequence
+    # Generate 16-Day (384 hours) hourly physical forecast sequence from Open-Meteo & STGNN
     hi_mean, hi_upper, hi_lower = [], [], []
     temp_mean, temp_upper, temp_lower = [], [], []
     rh_mean, rh_upper, rh_lower = [], [], []
 
     latest_time = pd.to_datetime(latest.recordedAt) if (latest and latest.recordedAt) else pd.Timestamp.now(tz="Asia/Manila")
 
-    for h in range(1, 721):
+    for h in range(1, 385):
         t_future = latest_time + pd.Timedelta(hours=h)
         hour_local = t_future.hour
 
@@ -347,7 +347,7 @@ def get_station_forecast(
         hi_raw = (gnn_weight * st_pred) + ((1.0 - gnn_weight) * nwp_hi_val)
         offset_hi = (hi_raw - base_hi) * smooth_w
         hi_val = round(base_hi + offset_hi, 1)
-        hi_spread = 1.0 + (h / 720.0) * 3.5
+        hi_spread = 1.0 + (h / 384.0) * 3.5
         hi_mean.append(hi_val)
         hi_upper.append(round(hi_val + hi_spread, 1))
         hi_lower.append(round(hi_val - hi_spread, 1))
@@ -356,7 +356,7 @@ def get_station_forecast(
         temp_raw = (gnn_weight * (base_temp + (st_pred - base_hi) * 0.7)) + ((1.0 - gnn_weight) * nwp_temp_val)
         offset_temp = (temp_raw - base_temp) * smooth_w
         temp_val = round(base_temp + offset_temp, 1)
-        temp_spread = 0.8 + (h / 720.0) * 2.5
+        temp_spread = 0.8 + (h / 384.0) * 2.5
         temp_mean.append(temp_val)
         temp_upper.append(round(temp_val + temp_spread, 1))
         temp_lower.append(round(temp_val - temp_spread, 1))
@@ -365,15 +365,13 @@ def get_station_forecast(
         rh_raw = (gnn_weight * (base_rh - (st_pred - base_hi) * 0.8)) + ((1.0 - gnn_weight) * nwp_rh_val)
         offset_rh = (rh_raw - base_rh) * smooth_w
         rh_val = round(min(100.0, max(0.0, base_rh + offset_rh)), 1)
-        rh_spread = 2.0 + (h / 720.0) * 5.0
+        rh_spread = 2.0 + (h / 384.0) * 5.0
         rh_mean.append(rh_val)
         rh_upper.append(round(min(100.0, rh_val + rh_spread), 1))
         rh_lower.append(round(max(0.0, rh_val - rh_spread), 1))
 
-
-
     return KloudtrackResponse(
-        message=f"Realtime 30-Day (1-Month) Hourly STGNN forecast generated for {station.name}",
+        message=f"Realtime 16-Day NWP/STGNN Hourly forecast generated for {station.name}",
         data={
             "station": station,
             "current": latest,

@@ -82,11 +82,11 @@ class SpatialTemporalGNN(nn.Module):
         forecasts_5d = forecasts_flat.view(batch_size, num_nodes, self.forecast_horizon, self.in_channels)
         return forecasts_5d
 
-    def predict_autoregressive_rollout(self, x: torch.Tensor, adj: torch.Tensor, steps: int = 720) -> torch.Tensor:
+    def predict_autoregressive_rollout(self, x: torch.Tensor, adj: torch.Tensor, steps: int = 384) -> torch.Tensor:
         """
         Multi-step autoregressive rolling forecast using STGNN spatial-temporal multi-variable neural predictions.
         x shape: [batch_size=1, num_nodes=7, seq_len=96, in_channels=5]
-        Returns: [batch_size=1, num_nodes=7, steps=720] (Heat Index forecasts)
+        Returns: [batch_size=1, num_nodes=7, steps=384] (Heat Index forecasts)
         """
         curr_x = x.clone()
         hi_rollout_predictions = []
