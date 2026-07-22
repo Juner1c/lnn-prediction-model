@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Fetch live telemetry & station forecasts
     async function fetchLiveTelemetry() {
         try {
-            const resp = await fetch("/telemetry/dashboard", { headers: HEADERS });
+            const resp = await fetch("/telemetry/dashboard");
             if (!resp.ok) throw new Error("API network error");
             const res = await resp.json();
             if (res.success && res.data) {
@@ -123,10 +123,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
         } catch (e) {
-            stationData = DEFAULT_STATIONS.map(st => {
-                const t = st.temp;
-                const rh = Math.min(100, Math.max(0, st.rh));
-                const hi = st.hi || calculateHeatIndexLocal(t, rh);
+            stationData = CENTRAL_LUZON_STATIONS_METADATA.map(st => {
+                const t = 31.0;
+                const rh = 65.0;
+                const hi = calculateHeatIndexLocal(t, rh);
                 return {
                     station: { id: st.id, name: st.name, latitude: st.lat, longitude: st.lon },
                     telemetry: { temperature: t, humidity: rh, heatIndex: hi }
@@ -134,16 +134,14 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-
         await fetchStationForecast(activeStationId);
-
         updateUIComponents();
     }
 
     // Fetch station forecast from backend endpoint
     async function fetchStationForecast(stId) {
         try {
-            const resp = await fetch(`/telemetry/station/${stId}/forecast`, { headers: HEADERS });
+            const resp = await fetch(`/telemetry/station/${stId}/forecast`);
             if (resp.ok) {
                 const res = await resp.json();
                 if (res.success && res.data) {
