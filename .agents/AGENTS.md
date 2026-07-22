@@ -25,6 +25,24 @@ This document defines the core rules, workflows, and constraints for the AI agen
 ### Continuous Forecast Boundary Continuity & Transition Smoothing Rule
 - **Zero Boundary Discontinuity ($C^0$ Continuity)**: Time-series forecasts extending from real-time telemetry MUST apply exponential boundary transition smoothing ($W_{\text{smooth}}(h) = 1 - e^{-h/6.0}$) to all additive forecast offsets, guaranteeing seamless zero-discontinuity continuity at $h=0$ without artificial spikes or jumps between history and forecast timelines.
 
+### No Silent Exception Swallowing Rule
+- **Constraint**: Never write `except Exception: pass` or `except: pass` in production code. Every exception handler must either: (1) Log the exception with context (`logger.warning/error`), OR (2) Re-raise a more specific exception, OR (3) Return an explicit error/fallback value with a comment explaining why swallowing is safe.
+- **Rationale**: Bare `pass` in exception handlers hides critical bugs like missing imports, broken network calls, and data corruption. It makes production debugging impossible.
+
+### No Hardcoded Secrets Rule
+- **Constraint**: API keys, tokens, passwords, and credentials MUST NOT appear as literal string values in any committed file (`.py`, `.js`, `.yml`, `.yaml`, `.json`, `.html`).
+- **Required Pattern**: Use `os.getenv("VAR_NAME")` with NO default value (or empty string default). Provide a `.env.example` with placeholder values.
+- **Frontend**: Dashboard and UI code must NEVER contain API keys. If the dashboard needs authenticated API access, use session tokens or remove auth from same-origin dashboard endpoints.
+
+### Portable Path Rule
+- **Constraint**: Source code, tests, and scripts MUST use relative paths computed from `os.path.dirname(__file__)` or `pathlib.Path(__file__).parent`. Never hardcode absolute paths like `c:\Users\...` or `/home/...`.
+- **Exception**: User-specific configuration in gitignored files (`.env`) may contain absolute paths.
+- **CI Check**: `grep -rn "Users/" src/ tests/ scripts/` should return nothing.
+
+### ML Model Integrity Rule
+- **Constraint**: Never serve predictions from a model that has not been trained (i.e., uses random/initialized weights). If a model is in development and untrained: (1) Label outputs explicitly as "synthetic/demo" in API responses and UI. (2) Do not claim the output is from the model — attribute it honestly. (3) The model input must be real data, not `torch.randn()`.
+- **Rationale**: Serving untrained model outputs as "AI predictions" is scientifically dishonest and misleads stakeholders about the system's actual capabilities.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol
