@@ -1,6 +1,9 @@
 import os
 import json
+import logging
 from typing import Dict, Any, List
+
+logger = logging.getLogger(__name__)
 
 class LocalStorageAdapter:
     """
@@ -36,7 +39,8 @@ class S3StorageAdapter:
         try:
             import boto3
             self.s3_client = boto3.client('s3')
-        except Exception:
+        except Exception as e:
+            logger.info(f"boto3 initialization skipped or unavailable: {e}")
             self.s3_client = None
 
     def upload_telemetry_batch(self, station_id: str, date_str: str, readings: List[Dict[str, Any]]) -> str:
@@ -51,8 +55,9 @@ class S3StorageAdapter:
                     Body=json.dumps(readings),
                     ContentType="application/json"
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Failed to upload telemetry to S3 key {s3_key}: {e}")
 
         return f"s3://{self.bucket_name}/{s3_key}"
+
 

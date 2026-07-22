@@ -1,7 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const API_KEY = "kloudtrack_secret_key_123";
-    const HEADERS = { "x-kloudtrack-key": API_KEY, "Content-Type": "application/json" };
-
     let map = null;
     let heatLayer = null;
     let isHeatmapVisible = true;
