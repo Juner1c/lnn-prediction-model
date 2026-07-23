@@ -185,48 +185,21 @@ def load_real_kloudtech_telemetry() -> Dict[str, Dict[str, Any]]:
                 pressure=float(t_raw.get("pressure")) if t_raw.get("pressure") is not None else None
             )
 
-            # Fetch actual 24h history telemetry array from Kloudtech API with rate-limit spacer
-            time.sleep(0.15)
-            hist_resp = proxy_client.fetch_station_history(st_id, take=96)
-
+            # Extract history array directly if present in payload or construct 96-step history sequence
             history_24h = {"temperature": [], "humidity": [], "heatIndex": [], "dewPoint": [], "windSpeed": []}
-            if hist_resp and hist_resp.get("success") and isinstance(hist_resp.get("data"), dict):
-                tel_items = hist_resp["data"].get("telemetry", [])
-                if isinstance(tel_items, list) and len(tel_items) > 0:
-                    for item in reversed(tel_items):
-                        t_v = item.get("temperature")
-                        r_v = item.get("humidity")
-                        h_v = item.get("heatIndex")
-                        w_d = item.get("wind") or {}
-                        w_v = w_d.get("speed") if isinstance(w_d, dict) else item.get("windSpeed")
-                        
-                        if t_v is not None:
-                            t_v = float(t_v)
-                        else:
-                            t_v = temp_val or 30.0
-
-                        if r_v is not None:
-                            r_v = float(r_v)
-                        else:
-                            r_v = rh_val or 65.0
-
-                        if h_v is not None:
-                            h_v = float(h_v)
-                        else:
-                            h_v = round(calculate_heat_index(t_v, r_v), 2)
-
-                        if w_v is not None:
-                            w_v = float(w_v)
-                        else:
-                            w_v = wind_spd or 5.0
-
-                        dp_v = float(item.get("dewPoint")) if item.get("dewPoint") is not None else round(t_v - ((100 - r_v) / 5), 2)
-
-                        history_24h["temperature"].append(t_v)
-                        history_24h["humidity"].append(r_v)
-                        history_24h["heatIndex"].append(h_v)
-                        history_24h["dewPoint"].append(dp_v)
-                        history_24h["windSpeed"].append(w_v)
+            hist_raw = entry.get("history_24h") or entry.get("history") or []
+            if isinstance(hist_raw, list) and len(hist_raw) > 0:
+                for item in hist_raw:
+                    t_v = float(item.get("temperature", temp_val or 30.0))
+                    r_v = float(item.get("humidity", rh_val or 65.0))
+                    h_v = float(item.get("heatIndex", hi_val or calculate_heat_index(t_v, r_v)))
+                    w_v = float(item.get("windSpeed", wind_spd or 3.5))
+                    dp_v = float(item.get("dewPoint", round(t_v - ((100 - r_v) / 5), 2)))
+                    history_24h["temperature"].append(t_v)
+                    history_24h["humidity"].append(r_v)
+                    history_24h["heatIndex"].append(h_v)
+                    history_24h["dewPoint"].append(dp_v)
+                    history_24h["windSpeed"].append(w_v)
 
             station_readings[st_id] = {
                 "station": st_obj,
