@@ -27,14 +27,18 @@ class KloudtechProxyClient:
     def fetch_with_cache(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         cache_key = f"{endpoint}:{str(sorted(params.items()) if params else '')}"
         now = time.time()
+        effective_ttl = max(self.cache_ttl or 900, settings.CACHE_TTL_SECONDS)
 
         if cache_key in self._cache:
             entry = self._cache[cache_key]
-            if now - entry["timestamp"] < self.cache_ttl:
+            age = now - entry["timestamp"]
+            if age < effective_ttl:
+                logger.debug(f"[CACHE HIT] Returning cached data for '{cache_key}' (Age: {age:.1f}s / {effective_ttl}s)")
                 return entry["data"]
 
-        # Call remote KloudTrack API
+        # Call remote KloudTrack API strictly when cache is stale (>15 minutes)
         url = f"{self.base_url}{endpoint}"
+        logger.info(f"[HTTP FETCH] Stale cache ({effective_ttl}s TTL). Querying remote Kloudtech API: '{url}'")
         try:
             resp = requests.get(url, headers=self._get_headers(), params=params, timeout=10)
             if resp.status_code == 200:
