@@ -32,7 +32,7 @@ _stgnn_num_nodes = 0
 
 _telemetry_cache: Optional[Dict[str, Dict[str, Any]]] = None
 _telemetry_cache_timestamp: float = 0.0
-CACHE_TTL_SECONDS: float = 60.0
+CACHE_TTL_SECONDS: float = 900.0
 
 def get_stgnn_model(active_stations: List[StationInfo]):
     global _stgnn_model, _adj_tensor, _stgnn_num_nodes

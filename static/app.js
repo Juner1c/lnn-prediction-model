@@ -646,6 +646,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initChart();
     fetchLiveTelemetry();
 
-    // Start 30-second background auto-update stream
-    autoUpdateInterval = setInterval(fetchLiveTelemetry, 30000);
+    // Start 15-minute background auto-update stream (900,000 ms)
+    autoUpdateInterval = setInterval(fetchLiveTelemetry, 900000);
 });

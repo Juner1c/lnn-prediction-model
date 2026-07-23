@@ -132,7 +132,7 @@ class TestKloudtechAPI(unittest.TestCase):
     def test_proxy_client_config(self):
         from src.api.client import proxy_client
         self.assertEqual(proxy_client.base_url, "https://api.kloudtechsea.com/api/v1")
-        self.assertEqual(proxy_client.cache_ttl, 60)
+        self.assertEqual(proxy_client.cache_ttl, 900)
 
     def test_station_forecast_curves_are_distinct(self):
         dash_res = self.client.get("/telemetry/dashboard")
