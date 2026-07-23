@@ -1,0 +1,416 @@
+[
+  {
+    "experiment_id": "exp_0001_1784766692",
+    "timestamp": "2026-07-23T00:31:32Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\nNo previous experiments executed yet. This is the baseline initialization run.\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Baseline initialization search.",
+    "chosen_params": {
+      "lr": 0.001,
+      "batch_size": 16,
+      "epochs": 10,
+      "hidden_dim": 32,
+      "recon_weight": 0.1
+    },
+    "train_loss": 1383.1908,
+    "validation_rmse": 31.5191,
+    "validation_mae": 21.6226,
+    "improvement_delta": 0.0,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0002_1784766714",
+    "timestamp": "2026-07-23T00:31:54Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 31.5191 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Lower learning rate with expanded STGNN hidden capacity.",
+    "chosen_params": {
+      "lr": 0.0005,
+      "batch_size": 16,
+      "epochs": 15,
+      "hidden_dim": 64,
+      "recon_weight": 0.15
+    },
+    "train_loss": 906.761,
+    "validation_rmse": 23.1894,
+    "validation_mae": 16.0432,
+    "improvement_delta": 8.3297,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0003_1784766830",
+    "timestamp": "2026-07-23T00:33:50Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 31.5191 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 23.1894 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Higher learning rate with larger batch batch size and lighter LNN denoising loss.",
+    "chosen_params": {
+      "lr": 0.002,
+      "batch_size": 32,
+      "epochs": 12,
+      "hidden_dim": 32,
+      "recon_weight": 0.05
+    },
+    "train_loss": 831.5026,
+    "validation_rmse": 23.702,
+    "validation_mae": 15.3062,
+    "improvement_delta": -0.5126,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0004_1784766842",
+    "timestamp": "2026-07-23T00:34:02Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 31.5191 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 23.1894 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 23.702 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Extended training epochs with stronger LNN reconstruction penalty.",
+    "chosen_params": {
+      "lr": 0.0008,
+      "batch_size": 16,
+      "epochs": 20,
+      "hidden_dim": 64,
+      "recon_weight": 0.2
+    },
+    "train_loss": 425.8535,
+    "validation_rmse": 7.0266,
+    "validation_mae": 5.0643,
+    "improvement_delta": 16.1628,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0005_1784766853",
+    "timestamp": "2026-07-23T00:34:13Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 31.5191 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 23.1894 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 23.702 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 7.0266 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Deep STGNN capacity with fine-grained mini-batch updates.",
+    "chosen_params": {
+      "lr": 0.0003,
+      "batch_size": 8,
+      "epochs": 15,
+      "hidden_dim": 128,
+      "recon_weight": 0.1
+    },
+    "train_loss": 241.7202,
+    "validation_rmse": 5.9975,
+    "validation_mae": 3.7142,
+    "improvement_delta": 1.0291,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0006_1784766857",
+    "timestamp": "2026-07-23T00:34:17Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 31.5191 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 23.1894 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 23.702 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 7.0266 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 5.9975 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Baseline initialization search.",
+    "chosen_params": {
+      "lr": 0.001,
+      "batch_size": 16,
+      "epochs": 10,
+      "hidden_dim": 32,
+      "recon_weight": 0.1
+    },
+    "train_loss": 1046.049,
+    "validation_rmse": 25.7028,
+    "validation_mae": 15.8313,
+    "improvement_delta": -19.7053,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0007_1784766864",
+    "timestamp": "2026-07-23T00:34:24Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for an LNN + STGNN Weather Forecasting System.\nYour goal is to optimize time-series forecast accuracy (minimize RMSE / MAE \u00b0C) for temperature, relative humidity, and heat index.\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 23.1894 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 23.702 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 7.0266 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 5.9975 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 25.7028 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 16, 32, 64, or 128>,\n    \"recon_weight\": <float between 0.01 and 0.5>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Lower learning rate with expanded STGNN hidden capacity.",
+    "chosen_params": {
+      "lr": 0.0005,
+      "batch_size": 16,
+      "epochs": 15,
+      "hidden_dim": 64,
+      "recon_weight": 0.15
+    },
+    "train_loss": 847.0922,
+    "validation_rmse": 21.7768,
+    "validation_mae": 14.7803,
+    "improvement_delta": -15.7793,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0008_1784767542",
+    "timestamp": "2026-07-23T00:45:42Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 23.702 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 7.0266 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 5.9975 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 25.7028 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 21.7768 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Higher learning rate with larger batch batch size and lighter LNN denoising loss.",
+    "chosen_params": {
+      "lr": 0.002,
+      "batch_size": 32,
+      "epochs": 12,
+      "hidden_dim": 32,
+      "recon_weight": 0.05
+    },
+    "train_loss": 10123.9475,
+    "validation_rmse": 27.5678,
+    "validation_mae": 14.3123,
+    "improvement_delta": -21.5703,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0009_1784767646",
+    "timestamp": "2026-07-23T00:47:26Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 7.0266 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 5.9975 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 25.7028 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 21.7768 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 27.5678 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Extended training epochs with stronger LNN reconstruction penalty.",
+    "chosen_params": {
+      "lr": 0.0008,
+      "batch_size": 16,
+      "epochs": 20,
+      "hidden_dim": 64,
+      "recon_weight": 0.2
+    },
+    "train_loss": 37673.6842,
+    "validation_rmse": 28.2189,
+    "validation_mae": 14.4661,
+    "improvement_delta": -22.2214,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0010_1784767794",
+    "timestamp": "2026-07-23T00:49:54Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 5.9975 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 25.7028 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 21.7768 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 27.5678 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 28.2189 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Deep STGNN capacity with fine-grained mini-batch updates.",
+    "chosen_params": {
+      "lr": 0.0003,
+      "batch_size": 8,
+      "epochs": 15,
+      "hidden_dim": 128,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19245.2027,
+    "validation_rmse": 28.5776,
+    "validation_mae": 14.6369,
+    "improvement_delta": -22.5801,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0011_1784767893",
+    "timestamp": "2026-07-23T00:51:33Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 25.7028 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 21.7768 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 27.5678 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 28.2189 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 28.5776 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Baseline initialization search.",
+    "chosen_params": {
+      "lr": 0.001,
+      "batch_size": 16,
+      "epochs": 10,
+      "hidden_dim": 32,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19370.5241,
+    "validation_rmse": 3.2809,
+    "validation_mae": 2.3809,
+    "improvement_delta": 2.7166,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0012_1784768002",
+    "timestamp": "2026-07-23T00:53:22Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 21.7768 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 27.5678 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 28.2189 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 28.5776 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.2809 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Lower learning rate with expanded STGNN hidden capacity.",
+    "chosen_params": {
+      "lr": 0.0005,
+      "batch_size": 16,
+      "epochs": 15,
+      "hidden_dim": 64,
+      "recon_weight": 0.15
+    },
+    "train_loss": 28468.2686,
+    "validation_rmse": 3.2842,
+    "validation_mae": 2.371,
+    "improvement_delta": -0.0033,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0013_1784768054",
+    "timestamp": "2026-07-23T00:54:14Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 27.5678 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 28.2189 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 28.5776 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.2809 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2842 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Higher learning rate with larger batch batch size and lighter LNN denoising loss.",
+    "chosen_params": {
+      "lr": 0.002,
+      "batch_size": 32,
+      "epochs": 12,
+      "hidden_dim": 32,
+      "recon_weight": 0.05
+    },
+    "train_loss": 10052.1791,
+    "validation_rmse": 3.2291,
+    "validation_mae": 2.3705,
+    "improvement_delta": 0.0518,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0014_1784768208",
+    "timestamp": "2026-07-23T00:56:48Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 28.2189 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 28.5776 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.2809 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2842 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2291 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Extended training epochs with stronger LNN reconstruction penalty.",
+    "chosen_params": {
+      "lr": 0.0008,
+      "batch_size": 16,
+      "epochs": 20,
+      "hidden_dim": 64,
+      "recon_weight": 0.2
+    },
+    "train_loss": 37794.1369,
+    "validation_rmse": 3.2729,
+    "validation_mae": 2.4101,
+    "improvement_delta": -0.0438,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0015_1784768415",
+    "timestamp": "2026-07-23T01:00:15Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 28.5776 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.2809 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2842 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2291 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2729 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Deep STGNN capacity with fine-grained mini-batch updates.",
+    "chosen_params": {
+      "lr": 0.0003,
+      "batch_size": 8,
+      "epochs": 15,
+      "hidden_dim": 128,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19232.425,
+    "validation_rmse": 3.3052,
+    "validation_mae": 2.4115,
+    "improvement_delta": -0.0761,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0016_1784769100",
+    "timestamp": "2026-07-23T01:11:40Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.2809 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2842 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2291 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2729 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3052 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Baseline initialization search.",
+    "chosen_params": {
+      "lr": 0.001,
+      "batch_size": 16,
+      "epochs": 10,
+      "hidden_dim": 32,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19286.1145,
+    "validation_rmse": 3.224,
+    "validation_mae": 2.4431,
+    "improvement_delta": 0.0051,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0017_1784769215",
+    "timestamp": "2026-07-23T01:13:35Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2842 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2291 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2729 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3052 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.224 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Lower learning rate with expanded STGNN hidden capacity.",
+    "chosen_params": {
+      "lr": 0.0005,
+      "batch_size": 16,
+      "epochs": 15,
+      "hidden_dim": 64,
+      "recon_weight": 0.15
+    },
+    "train_loss": 28519.5006,
+    "validation_rmse": 3.2552,
+    "validation_mae": 2.4754,
+    "improvement_delta": -0.0312,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0018_1784769267",
+    "timestamp": "2026-07-23T01:14:27Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2291 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2729 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3052 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.224 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2552 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Higher learning rate with larger batch batch size and lighter LNN denoising loss.",
+    "chosen_params": {
+      "lr": 0.002,
+      "batch_size": 32,
+      "epochs": 12,
+      "hidden_dim": 32,
+      "recon_weight": 0.05
+    },
+    "train_loss": 10019.9809,
+    "validation_rmse": 3.2219,
+    "validation_mae": 2.3788,
+    "improvement_delta": 0.0021,
+    "status": "IMPROVED"
+  },
+  {
+    "experiment_id": "exp_0019_1784769432",
+    "timestamp": "2026-07-23T01:17:12Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2729 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3052 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.224 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2552 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2219 \u00b0C | Status: IMPROVED\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Extended training epochs with stronger LNN reconstruction penalty.",
+    "chosen_params": {
+      "lr": 0.0008,
+      "batch_size": 16,
+      "epochs": 20,
+      "hidden_dim": 64,
+      "recon_weight": 0.2
+    },
+    "train_loss": 37772.2336,
+    "validation_rmse": 3.2784,
+    "validation_mae": 2.5047,
+    "improvement_delta": -0.0565,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0020_1784769663",
+    "timestamp": "2026-07-23T01:21:03Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3052 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.224 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2552 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2219 \u00b0C | Status: IMPROVED\nExp 5: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2784 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Deep STGNN capacity with fine-grained mini-batch updates.",
+    "chosen_params": {
+      "lr": 0.0003,
+      "batch_size": 8,
+      "epochs": 15,
+      "hidden_dim": 128,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19223.7676,
+    "validation_rmse": 3.3016,
+    "validation_mae": 2.4955,
+    "improvement_delta": -0.0797,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0021_1784769728",
+    "timestamp": "2026-07-23T01:22:08Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.224 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2552 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2219 \u00b0C | Status: IMPROVED\nExp 4: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2784 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3016 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Baseline initialization search.",
+    "chosen_params": {
+      "lr": 0.001,
+      "batch_size": 16,
+      "epochs": 10,
+      "hidden_dim": 32,
+      "recon_weight": 0.1
+    },
+    "train_loss": 19469.739,
+    "validation_rmse": 3.255,
+    "validation_mae": 2.4099,
+    "improvement_delta": -0.0331,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0022_1784770363",
+    "timestamp": "2026-07-23T01:32:43Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2552 \u00b0C | Status: NO_IMPROVEMENT\nExp 2: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2219 \u00b0C | Status: IMPROVED\nExp 3: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2784 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3016 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.255 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Lower learning rate with expanded STGNN hidden capacity.",
+    "chosen_params": {
+      "lr": 0.0005,
+      "batch_size": 16,
+      "epochs": 15,
+      "hidden_dim": 64,
+      "recon_weight": 0.15
+    },
+    "train_loss": 28506.3446,
+    "validation_rmse": 3.2567,
+    "validation_mae": 2.4765,
+    "improvement_delta": -0.0348,
+    "status": "SUBOPTIMAL"
+  },
+  {
+    "experiment_id": "exp_0023_1784771113",
+    "timestamp": "2026-07-23T01:45:13Z",
+    "prompt": "You are the LFM2.5-8B Autonomous Data Science Meta-Controller for a 12-Station Bataan LNN + Spatial-Temporal GNN Weather Forecasting System.\nYour goal is to optimize multi-variable forecast accuracy (temperature, humidity, air pressure, wind speed, heat index) under real-world sensor misreadings, zero-values, and missing/down stations (e.g., Limay or Quinawan offline).\n\n### Past Experiment Trajectory History:\n\nExp 1: params={\"lr\": 0.002, \"batch_size\": 32, \"epochs\": 12, \"hidden_dim\": 32, \"recon_weight\": 0.05} => Val RMSE: 3.2219 \u00b0C | Status: IMPROVED\nExp 2: params={\"lr\": 0.0008, \"batch_size\": 16, \"epochs\": 20, \"hidden_dim\": 64, \"recon_weight\": 0.2} => Val RMSE: 3.2784 \u00b0C | Status: NO_IMPROVEMENT\nExp 3: params={\"lr\": 0.0003, \"batch_size\": 8, \"epochs\": 15, \"hidden_dim\": 128, \"recon_weight\": 0.1} => Val RMSE: 3.3016 \u00b0C | Status: NO_IMPROVEMENT\nExp 4: params={\"lr\": 0.001, \"batch_size\": 16, \"epochs\": 10, \"hidden_dim\": 32, \"recon_weight\": 0.1} => Val RMSE: 3.255 \u00b0C | Status: NO_IMPROVEMENT\nExp 5: params={\"lr\": 0.0005, \"batch_size\": 16, \"epochs\": 15, \"hidden_dim\": 64, \"recon_weight\": 0.15} => Val RMSE: 3.2567 \u00b0C | Status: NO_IMPROVEMENT\n\n### Instructions:\nPropose the NEXT hyperparameter experiment hypothesis to evaluate. You must output ONLY a valid JSON object matching this exact schema:\n{\n  \"hypothesis\": \"<Short clear explanation of why you chose these parameters for dirty data & station outage recovery>\",\n  \"parameters\": {\n    \"lr\": <float between 0.0001 and 0.01>,\n    \"batch_size\": <int: 8, 16, 32, or 64>,\n    \"epochs\": <int between 5 and 30>,\n    \"hidden_dim\": <int: 32, 64, 128, or 256>,\n    \"recon_weight\": <float between 0.01 and 0.5>,\n    \"outage_mask_ratio\": <float between 0.0 and 0.35>\n  }\n}\nDo NOT include any extra conversational markdown text outside the raw JSON object.\n",
+    "hypothesis": "Higher learning rate with larger batch batch size and lighter LNN denoising loss.",
+    "chosen_params": {
+      "lr": 0.002,
+      "batch_size": 32,
+      "epochs": 12,
+      "hidden_dim": 32,
+      "recon_weight": 0.05
+    },
+    "train_loss": 10029.963,
+    "validation_rmse": 3.2441,
+    "validation_mae": 2.4241,
+    "improvement_delta": -0.0222,
+    "status": "SUBOPTIMAL"
+  }
+]

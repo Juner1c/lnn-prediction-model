@@ -20,6 +20,15 @@ httpx>=0.24.0
 pyyaml>=6.0
 requests>=2.31.0
 
+# Hugging Face & Agent Fine-Tuning Stack
+huggingface_hub>=0.20.0
+transformers>=4.40.0
+bitsandbytes>=0.42.0
+peft>=0.10.0
+accelerate>=0.28.0
+datasets>=2.18.0
+trl>=0.8.0
+
 # Testing & Linting
 pytest>=7.3.0
 pytest-cov>=4.1.0

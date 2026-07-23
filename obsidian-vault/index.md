@@ -17,6 +17,8 @@ title: Wiki Index
 - [[concepts/heat-index-calculator-module|Deterministic Heat-Index & Thermal Comfort Calculator Module]] — Mathematical equations for NWS Rothfusz, Lu & Romps apparent temp, Stull wet-bulb, and vectorized batching ( #heat-index #rothfusz #lu-romps #stull #wet-bulb #deterministic)
 - [[concepts/stgnn-forecast-engine|Spatial-Temporal GNN Forecasting Engine Architecture]] — Haversine spatial distance adjacency matrix construction and joint Spatial GCN + LNN multi-step forecasting ( #gnn #stgnn #spatial-graph #haversine #adjacency-matrix #forecast)
 - [[concepts/dashboard-visualization|Real-Time Heat-Index Dashboard & UI/UX Architecture]] — Aesthetic identity, Leaflet map, Chart.js 16-step LNN/STGNN forecast curves, and FastAPI static serving ( #dashboard #frontend-design #ui-ux #leaflet #chartjs #telemetry #fastapi)
+- [[concepts/spatial-graph-outage-mitigation|Spatial Graph Outage Mitigation]] — Haversine distance graph convolution ($A_{\text{norm}} \cdot H$) for dynamic missing node feature reconstruction during station dropouts ( #gnn #spatial-graph #outage-mitigation #haversine #imputation)
+- [[concepts/scheduled-autotuning-service|Scheduled Autotuning Service]] — Background daemon (`scripts/schedule_autotuning.py`) executing 6-hour retraining cycles and checkpoint updates (`data/stgnn_bataan_12nodes.pt`) ( #service #daemon #scheduler #autotuning #checkpoint)
 
 ## Entities
 - [[entities/antidoom|Antidoom (FTPO Preference & Anti-Loop Framework)]] — Final Token Preference Optimization and anti-repetition loop guard integration ( #antidoom #ftpo #anti-loop #liquidai)

@@ -51,6 +51,13 @@ This document defines the core rules, workflows, and constraints for the AI agen
 - **No Local CSV Fallbacks**: Do NOT fall back to reading local CSV files (`data/timeseries_15min_clean.csv`) or querying external third-party APIs (such as Open-Meteo).
 - **Service Resilience**: If Kloudtech API connectivity is unavailable or unconfigured, endpoints must return explicit 503 HTTP status errors, and frontend components must render clear connection status indicators (`Kloudtech API: DISCONNECTED`).
 
+### Spatial Graph Outage Mitigation Rule
+- **Constraint**: Multi-station telemetry pipelines MUST implement spatial graph node imputation (`SpatialGraphConv` over Haversine distance adjacency matrices) paired with physical range validation (replacing unphysical sensor readings like $T \le 5^\circ\text{C}$ or $P < 800\text{ hPa}$ with `NaN`).
+- **Offline Node Resilience**: When a station is offline or unreadable, model forward passes MUST inject node masks and leverage neighboring station spatial embeddings to reconstruct missing station features without throwing `NaN` or failing.
+
+### Channel-Specific Validation Metric Rule
+- **Constraint**: When serving multi-variable time-series forecast metrics (containing metrics of different physical units such as Temperature in °C, Humidity in %, and Air Pressure in hPa), validation reporting MUST isolate and compute channel-specific RMSE in physical target units (e.g. Temperature RMSE in °C and Heat Index RMSE in °C) rather than reporting raw unscaled multi-channel MSE sums.
+
 ---
 
 ## 1. Simultaneous Workflow Protocol

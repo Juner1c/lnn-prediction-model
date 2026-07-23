@@ -8,7 +8,7 @@ updated: 2026-07-21T13:38:00Z
 
 # Active Semantic Snapshot — LNN Prediction Model Project
 
-> **Latest Update (Plan 015)**: Connected real per-station Open-Meteo telemetry and 16-day physical NWP forecasts for all 7 weather stations independently. Eliminated hardcoded analytical sine wave overlays (`diurnal * 3.2 + synoptic_3d * 1.8 + synoptic_7d * 2.2`), blending STGNN neural predictions directly with station-specific physical NWP baselines. All 36 tests passing.
+> **Latest Update (2025–2026 Multi-Year Bataan Milestone)**: Merged 2025 and 2026 weather telemetry across all 12 Bataan Automated Weather Stations into a continuous 1.6+ year timeline (**118,846 total records** across 13,674 timesteps). Trained **LFM2.5-8B-A1B** with **Spatial Graph Outage Mitigation** (`SpatialGraphConv` over Haversine distance graph). Under 20% simulated station outages (e.g., `Limay` or `Quinawan` down), achieved **`3.2219 °C` Temperature RMSE** and **`4.9579 °C` Heat Index RMSE**. All unit tests passing (`100% PASS`).
 
 
 

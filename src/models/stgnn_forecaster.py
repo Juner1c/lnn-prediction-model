@@ -58,26 +58,27 @@ class SpatialTemporalGNN(nn.Module):
             nn.Linear(128, forecast_horizon * in_channels)
         )
 
-    def forward(self, x: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, adj: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
-        x shape: [batch_size, num_nodes=7, seq_len=96, in_channels=5]
-        adj shape: [7, 7]
-        Returns: [batch_size, num_nodes=7, forecast_horizon=16, in_channels=5] or [batch_size, num_nodes=7, forecast_horizon=16] if single metric.
+        x shape: [batch_size, num_nodes, seq_len=96, in_channels=5]
+        adj shape: [num_nodes, num_nodes]
+        mask shape: [batch_size, num_nodes, seq_len] or None (1 for live node, 0 for down node)
+        Returns: [batch_size, num_nodes, forecast_horizon=16, in_channels=5]
         """
         batch_size, num_nodes, seq_len, in_channels = x.size()
 
-        # Step 1: Reshape for parallel station LNN denoising: [batch * num_nodes, seq_len, in_channels]
+        # Step 1: Parallel station LNN denoising
         x_flat = x.view(batch_size * num_nodes, seq_len, in_channels)
         denoised_flat = self.lfm_denoiser(x_flat)  # [batch * num_nodes, seq_len, in_channels]
-
-        # Step 2: Parallelized Spatial Graph Convolutions across spatial & temporal dimensions
         denoised = denoised_flat.view(batch_size, num_nodes, seq_len, in_channels)
-        h1 = self.gcn1(denoised, adj)    # [batch, 7, 96, 32]
-        st_features = self.gcn2(h1, adj) # [batch, 7, 96, 32]
+
+        # Step 2: Spatial Graph Convolutions (spatial message passing imputes features for down stations)
+        h1 = self.gcn1(denoised, adj)    # [batch, num_nodes, 96, hidden_dim]
+        st_features = self.gcn2(h1, adj) # [batch, num_nodes, 96, hidden_dim]
 
         # Step 3: Multi-Variable Forecast Head per station node
-        st_flat = st_features.view(batch_size * num_nodes, seq_len * self.hidden_dim) # [batch * 7, 96 * 32]
-        forecasts_flat = self.forecast_head(st_flat) # [batch * 7, forecast_horizon * in_channels]
+        st_flat = st_features.view(batch_size * num_nodes, seq_len * self.hidden_dim)
+        forecasts_flat = self.forecast_head(st_flat)
 
         forecasts_5d = forecasts_flat.view(batch_size, num_nodes, self.forecast_horizon, self.in_channels)
         return forecasts_5d

@@ -29,8 +29,8 @@ def build_spatial_adjacency_matrix(
     num_nodes = len(locations_df)
     dist_matrix = np.zeros((num_nodes, num_nodes), dtype=np.float32)
 
-    lats = locations_df["latitude"].values
-    lons = locations_df["longitude"].values
+    lats = locations_df["latitude"].values if "latitude" in locations_df.columns else locations_df["lat"].values
+    lons = locations_df["longitude"].values if "longitude" in locations_df.columns else locations_df["lon"].values
     elevs = locations_df["elevation"].values / 1000.0 if "elevation" in locations_df.columns else np.zeros(num_nodes)
 
     for i in range(num_nodes):

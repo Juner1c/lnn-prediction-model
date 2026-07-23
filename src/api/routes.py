@@ -23,6 +23,8 @@ from src.api.client import proxy_client
 
 router = APIRouter()
 
+from src.models.checkpoint_manager import load_model_checkpoint, DEFAULT_CHECKPOINT_PATH
+
 WEIGHTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "stgnn_weights.pt"))
 _stgnn_model = None
 _adj_tensor = None
@@ -37,7 +39,9 @@ def get_stgnn_model(active_stations: List[StationInfo]):
     num_nodes = len(active_stations) if active_stations else 7
     if _stgnn_model is None or _stgnn_num_nodes != num_nodes:
         _stgnn_model = SpatialTemporalGNN(num_nodes=num_nodes, in_channels=5, hidden_dim=32, forecast_horizon=16)
-        if os.path.exists(WEIGHTS_PATH):
+        if os.path.exists(DEFAULT_CHECKPOINT_PATH):
+            load_model_checkpoint(_stgnn_model, filepath=DEFAULT_CHECKPOINT_PATH)
+        elif os.path.exists(WEIGHTS_PATH):
             try:
                 _stgnn_model.load_state_dict(torch.load(WEIGHTS_PATH, weights_only=True))
             except Exception:
